@@ -159,6 +159,7 @@
             opacity: 1;
         }
 
+        /* Fluid design for the toggle button */
         #toggle-button {
             background: linear-gradient(to right, #FFD67A, #FFC04D);
             border: 2px solid #FFD67A;
@@ -301,10 +302,10 @@
 <main>
     <div class="left-column"></div>
     <div class="right-column">
-        <button id="toggle-button" onclick="togglePDF()">Switch BSE guidelines</button>
         <div class="pdf-container">
             <embed id="pdf-embed" src="files/DeptPolicy.pdf" type="application/pdf">
         </div>
+        <button id="toggle-button" onclick="togglePDF()">Switch BSE guidelines</button>
         <div class="author-text">Diogo Martins 2024</div>
     </div>
 </main>
