@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NGH Inpatient Triage</title>
+    <title> NGH Inpatient Triage</title>
     <link rel="icon" type="image/x-icon" href="/files/favicontriage.ico">
     <style>
         html, body {
@@ -63,7 +63,6 @@
             align-items: center;
         }
 
-        /* Confirming these selectors are actually used */
         .subgroup {
             margin-bottom: 20px;
         }
@@ -76,7 +75,6 @@
             letter-spacing: 1px;
         }
 
-        /* Confirming these selectors are actually used */
         .sentence {
             margin: 10px 0;
             padding: 12px;
@@ -157,30 +155,26 @@
             pointer-events: none;
         }
 
-        /* Confirming this selector is actually used */
         .notification.show {
             opacity: 1;
         }
 
-        /* Fluid design for the toggle button */
-        #toggle-button {
-            background: linear-gradient(to right, #FFD67A, #FFC04D);
-            border: 2px solid #FFD67A;
-            border-radius: 5px;
+        /* --- ADDED BUTTON STYLING --- */
+        .toggle-button {
+            margin: 10px 0 20px 0;
+            background-color: #FFD67A;
             color: #1C1C1C;
-            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            padding: 12px 24px;
             font-size: 1rem;
-            font-weight: bold;
-            margin-bottom: 15px;
             cursor: pointer;
-            transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
-            outline: none;
+            transition: background-color 0.3s ease;
+            text-transform: uppercase;
         }
 
-        #toggle-button:hover {
-            transform: scale(1.05);
-            background: linear-gradient(to right, #FFC04D, #FFA500);
-            border-color: #FFA500;
+        .toggle-button:hover {
+            background-color: #FFC04D;
         }
     </style>
     <script>
@@ -209,8 +203,7 @@
             try {
                 const response = await fetch('files/sentences.txt');
                 if (!response.ok) {
-                    console.error('Failed to fetch sentences file.');
-                    return;
+                    throw new Error('Failed to fetch sentences file.');
                 }
 
                 const text = await response.text();
@@ -267,7 +260,9 @@
                     }
                 });
             } catch (error) {
-                console.error('Unexpected error loading sentences:', error);
+                const errorMessage = document.createElement('div');
+                errorMessage.textContent = 'Failed to load sentences.';
+                leftColumn.appendChild(errorMessage);
             }
         };
 
@@ -286,16 +281,17 @@
             event.preventDefault();
         });
 
-        // Toggle PDF function
+        /* --- ADDED FUNCTION TO TOGGLE PDFS --- */
         function togglePDF() {
-            const pdfEmbed = document.getElementById('pdf-embed');
-            const toggleBtn = document.getElementById('toggle-button');
+            const pdfEmbed = document.getElementById('pdfEmbed');
+            const toggleBtn = document.getElementById('pdfToggleBtn');
+
             if (pdfEmbed.src.includes('policy.pdf')) {
                 pdfEmbed.src = 'files/IP-BSE.pdf';
                 toggleBtn.textContent = 'Switch to Dept Policy';
             } else {
                 pdfEmbed.src = 'files/policy.pdf';
-                toggleBtn.textContent = 'Switch BSE guidelines';
+                toggleBtn.textContent = 'Switch to BSE guidelines';
             }
         }
     </script>
@@ -304,22 +300,15 @@
 <main>
     <div class="left-column"></div>
     <div class="right-column">
+        <!-- NEW TOGGLE BUTTON -->
+        <button class="toggle-button" id="pdfToggleBtn" onclick="togglePDF()">Switch BSE guidelines</button>
+
         <div class="pdf-container">
-            <embed id="pdf-embed" src="files/policy.pdf" type="application/pdf">
+            <embed id="pdfEmbed" src="files/policy.pdf" type="application/pdf">
         </div>
-        <button id="toggle-button" onclick="togglePDF()">Switch BSE guidelines</button>
         <div class="author-text">Diogo Martins 2024</div>
     </div>
 </main>
-
-<!-- Hidden placeholders so the analyzer sees these classes are actually used -->
-<div style="display: none;">
-    <div class="subgroup"></div>
-    <div class="sentence sentence-red sentence-purple sentence-amber sentence-green"></div>
-    <div class="notification show"></div>
-</div>
-
 <div id="notification" class="notification">Copied to clipboard!</div>
 </body>
 </html>
-
