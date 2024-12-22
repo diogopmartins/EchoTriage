@@ -288,11 +288,11 @@
         function togglePDF() {
             const pdfEmbed = document.getElementById('pdf-embed');
             const toggleBtn = document.getElementById('toggle-button');
-            if (pdfEmbed.src.includes('DeptPolicy.pdf')) {
+            if (pdfEmbed.src.includes('policy.pdf')) {
                 pdfEmbed.src = 'files/IP-BSE.pdf';
                 toggleBtn.textContent = 'Switch to Dept Policy';
             } else {
-                pdfEmbed.src = 'files/DeptPolicy.pdf';
+                pdfEmbed.src = 'files/policy.pdf';
                 toggleBtn.textContent = 'Switch BSE guidelines';
             }
         }
@@ -303,7 +303,7 @@
     <div class="left-column"></div>
     <div class="right-column">
         <div class="pdf-container">
-            <embed id="pdf-embed" src="files/DeptPolicy.pdf" type="application/pdf">
+            <embed id="pdf-embed" src="files/policy.pdf" type="application/pdf">
         </div>
         <button id="toggle-button" onclick="togglePDF()">Switch BSE guidelines</button>
         <div class="author-text">Diogo Martins 2024</div>
