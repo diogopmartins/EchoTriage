@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title> NGH Inpatient Triage</title>
-    <link rel="icon" type="image/x-icon" href="/files/favicon.ico">
+    <title>NGH Inpatient Triage</title>
+    <link rel="icon" type="image/x-icon" href="/files/favicontriage.ico">
     <style>
         html, body {
             margin: 0;
@@ -63,6 +63,10 @@
             align-items: center;
         }
 
+        .subgroup {
+            margin-bottom: 20px;
+        }
+
         .subgroup h3 {
             color: #FFD67A;
             font-size: 1rem;
@@ -71,6 +75,39 @@
             letter-spacing: 1px;
         }
 
+        .sentence {
+            margin: 10px 0;
+            padding: 12px;
+            background-color: #2A2A2A;
+            border: 2px solid #FFD67A;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .sentence:hover {
+            transform: scale(1.02);
+            border-color: #FFD700;
+        }
+
+        .sentence-red:hover {
+            background-color: red;
+        }
+
+        .sentence-purple:hover {
+            background-color: purple;
+        }
+
+        .sentence-amber:hover {
+            background-color: #FFA500;
+        }
+
+        .sentence-green:hover {
+            background-color: green;
+        }
 
         .pdf-container {
             border: 2px solid #FFD67A;
@@ -121,24 +158,6 @@
         .notification.show {
             opacity: 1;
         }
-
-        /* --- ADDED BUTTON STYLING --- */
-        .toggle-button {
-            margin: 10px 0 20px 0;
-            background-color: #FFD67A;
-            color: #1C1C1C;
-            border: none;
-            border-radius: 5px;
-            padding: 12px 24px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            text-transform: uppercase;
-        }
-
-        .toggle-button:hover {
-            background-color: #FFC04D;
-        }
     </style>
     <script>
         function addWorkingHours(startDate, hours) {
@@ -159,6 +178,17 @@
 
         function formatTime(d) {
             return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+        }
+
+        // *** ADDED FUNCTION TO TOGGLE PDF ***
+        function togglePDF() {
+            const embedElement = document.querySelector('.pdf-container embed');
+            // Check which PDF is currently displayed
+            if (embedElement.src.includes('policy.pdf')) {
+                embedElement.src = 'files/bse.pdf';
+            } else {
+                embedElement.src = 'files/policy.pdf';
+            }
         }
 
         window.onload = async function() {
@@ -243,31 +273,21 @@
         document.addEventListener('contextmenu', function(event) {
             event.preventDefault();
         });
-
-        /* --- ADDED FUNCTION TO TOGGLE PDFS --- */
-        function togglePDF() {
-            const pdfEmbed = document.getElementById('pdfEmbed');
-            const toggleBtn = document.getElementById('pdfToggleBtn');
-
-            if (pdfEmbed.src.includes('policy.pdf')) {
-                pdfEmbed.src = 'files/IP-BSE.pdf';
-                toggleBtn.textContent = 'Switch to Dept Policy';
-            } else {
-                pdfEmbed.src = 'files/policy.pdf';
-                toggleBtn.textContent = 'Switch to BSE guidelines';
-            }
-        }
     </script>
 </head>
 <body>
 <main>
     <div class="left-column"></div>
     <div class="right-column">
-        <!-- NEW TOGGLE BUTTON -->
-        <button class="toggle-button" id="pdfToggleBtn" onclick="togglePDF()">Switch BSE guidelines</button>
+        <button
+                onclick="togglePDF()"
+                style="margin-bottom: 10px; padding: 8px 16px; background-color: #FFD67A; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: #1C1C1C;"
+        >
+            Switch BSE / Dept Policies
+        </button>
 
         <div class="pdf-container">
-            <embed id="pdfEmbed" src="files/policy.pdf" type="application/pdf">
+            <embed src="files/policy.pdf" type="application/pdf">
         </div>
         <div class="author-text">Diogo Martins 2024</div>
     </div>
