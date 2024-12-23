@@ -63,11 +63,6 @@
             align-items: center;
         }
 
-        /* Group title styling */
-        .subgroup {
-            margin-bottom: 20px;
-        }
-
         .subgroup h3 {
             color: #FFD67A;
             font-size: 1rem;
@@ -76,7 +71,6 @@
             letter-spacing: 1px;
         }
 
-        /* Sentence box styling */
         .sentence {
             margin: 10px 0;
             padding: 12px;
@@ -111,7 +105,6 @@
             background-color: green;
         }
 
-        /* PDF container */
         .pdf-container {
             border: 2px solid #FFD67A;
             border-radius: 5px;
@@ -132,7 +125,6 @@
             border: none;
         }
 
-        /* Author text */
         .author-text {
             color: #292827;
             font-size: 0.8rem;
@@ -142,7 +134,6 @@
             letter-spacing: 1px;
         }
 
-        /* Notification styling */
         .notification {
             position: fixed;
             background: #4CAF50;
@@ -182,6 +173,7 @@
             background-color: #FFC04D;
         }
     </style>
+
     <script>
         function addWorkingHours(startDate, hours) {
             let date = new Date(startDate);
@@ -203,21 +195,23 @@
             return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
         }
 
-        /* Toggle PDF function */
         function togglePDF() {
             const embedEl = document.querySelector('.pdf-container embed');
             const currentSrc = embedEl.getAttribute('src');
+            const switchBtn = document.getElementById('toggleBtn');
 
             if (currentSrc.includes('policy.pdf')) {
                 embedEl.setAttribute('src', 'bse.pdf');
+                switchBtn.textContent = 'Switch to Dept policy';
             } else {
                 embedEl.setAttribute('src', 'policy.pdf');
+                switchBtn.textContent = 'Switch to BSE guidelines';
             }
         }
 
         window.onload = async function() {
-            // Attach event listener to Switch PDF button
             const switchBtn = document.getElementById('toggleBtn');
+            switchBtn.textContent = 'Switch to BSE guidelines';
             switchBtn.addEventListener('click', togglePDF);
 
             const leftColumn = document.querySelector('.left-column');
@@ -269,7 +263,7 @@
                             let expected = '';
                             if (hoursToAdd > 0) {
                                 const expectedDate = addWorkingHours(now, hoursToAdd);
-                                expected = ` ** Expected scan until ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`;
+                                expected = ` Expected scan until ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`;
                             }
 
                             const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
@@ -297,7 +291,6 @@
             }, 1000);
         }
 
-        // Prevent right-click context menu
         document.addEventListener('contextmenu', function(event) {
             event.preventDefault();
         });
@@ -307,11 +300,8 @@
 <main>
     <div class="left-column"></div>
     <div class="right-column">
-        <!-- "Switch PDF" Button -->
-        <button id="toggleBtn">Switch PDF</button>
-
+        <button id="toggleBtn"></button>
         <div class="pdf-container">
-            <!-- Default PDF shown is "policy.pdf" -->
             <embed src="policy.pdf" type="application/pdf">
         </div>
         <div class="author-text">Diogo Martins 2024</div>
