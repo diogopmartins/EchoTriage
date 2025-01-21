@@ -6,8 +6,9 @@
 -- RED PATHWAY - IP ECHO request has been received and triaged. Request has been triaged as red and we will aim to perform within 24 hrs (working days only). Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
 
 - AMBER PATHWAY
--- AMBER PATHWAY - IP ECHO request has been received and triaged. Request has been triaged as amber and we will aim to perform with 72 hrs / 3 working days.
--- AMBER PATHWAY - IP ECHO request has been received and triaged. Request has been triaged as amber and we will aim to perform with 72 hrs / 3 working days. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
+-- AMBER PATHWAY - IP ECHO request has been received and triaged. Request has been triaged as amber and we will aim to perform within 72 hrs / 3 working days.
+-- AMBER PATHWAY - IP ECHO request has been received and triaged. Request has been triaged as amber and we will aim to perform within 72 hrs / 3 working days. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
+-- AMBER PATHWAY - IP ECHO request has been received and triaged. Request has been triaged as amber due to lack of information and we will aim to perform within 72 hrs / 3 working days. Please call Echo Dept with more info regarding this patient/request.
 
 - REJECTED
 -- REJECTED - IP Echo Request received and triaged. Request has been rejected as request does not provide the clinical information for heart failure triage such: ECG, Cardiovascular examination (?JVP , ?murmurs), Chest XRay and if there was a previous echo. Please submit a new request with the appropriate clinical details, in accordance with the inpatient echo policy. For more information, call 4473. Please note that a new request must be submitted.
