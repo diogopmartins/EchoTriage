@@ -268,7 +268,8 @@
                             let expected = '';
                             if (hoursToAdd > 0) {
                                 const expectedDate = addWorkingHours(now, hoursToAdd);
-                                expected = ` Expected scan until ${getDayName(expectedDate)}, ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`;
+                                expected = ``;
+                            // ` Expected scan until ${getDayName(expectedDate)}, ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`
                             }
 
                             const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
