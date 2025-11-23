@@ -615,8 +615,8 @@
                     const handleConfirm = () => {
                         const echoText = input.value.trim();
                         if (echoText) {
-                            // Replace "PREVIOUS ECHO." with "PREVIOUS ECHO: "text""
-                            const modifiedText = textContent.replace('PREVIOUS ECHO.', `PREVIOUS ECHO: "${echoText}"`);
+                            // Replace "PREVIOUS ECHO." with "PREVIOUS ECHO: text"
+                            const modifiedText = textContent.replace('PREVIOUS ECHO.', `PREVIOUS ECHO: ${echoText}`);
                             copyToClipboard(modifiedText, event);
                         } else {
                             // If no text entered, just copy original
