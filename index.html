@@ -589,13 +589,17 @@
                         const title = document.createElement('h3');
                         title.textContent = line.slice(2);
                         subgroup.appendChild(title);
-                        // Insert after search container, or append if no search container
+                        // Append subgroups in order (after search container if it exists)
                         if (searchContainer) {
-                            // Insert after search container
-                            if (searchContainer.nextSibling) {
-                                leftColumn.insertBefore(subgroup, searchContainer.nextSibling);
+                            // Insert after search container, or after last subgroup
+                            const existingSubgroups = leftColumn.querySelectorAll('.subgroup');
+                            if (existingSubgroups.length > 0) {
+                                // Insert after the last subgroup
+                                const lastSubgroup = existingSubgroups[existingSubgroups.length - 1];
+                                leftColumn.insertBefore(subgroup, lastSubgroup.nextSibling);
                             } else {
-                                leftColumn.appendChild(subgroup);
+                                // First subgroup - insert after search container
+                                leftColumn.insertBefore(subgroup, searchContainer.nextSibling);
                             }
                         } else {
                             leftColumn.appendChild(subgroup);
