@@ -1241,7 +1241,18 @@
             <div class="pdf-toggle-label">BSE Guidelines</div>
         </div>
         <div class="pdf-container">
-            <embed src="policy-ip.pdf" type="application/pdf">
+            <div class="pdf-controls">
+                <button class="pdf-control-btn" id="pdfPrevPage">‹ Prev</button>
+                <span class="pdf-page-info">
+                    Page <input type="number" id="pdfPageInput" class="pdf-page-input" min="1" value="1"> of <span id="pdfTotalPages">-</span>
+                </span>
+                <button class="pdf-control-btn" id="pdfNextPage">Next ›</button>
+                <button class="pdf-control-btn" id="pdfZoomOut">−</button>
+                <button class="pdf-control-btn" id="pdfZoomIn">+</button>
+                <button class="pdf-control-btn" id="pdfFitWidth">Fit Width</button>
+                <button class="pdf-control-btn" id="pdfActualSize">100%</button>
+            </div>
+            <div class="pdf-viewer" id="pdfViewer"></div>
         </div>
         <div class="author-container">
             <div class="toggle-container">
