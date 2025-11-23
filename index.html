@@ -613,25 +613,54 @@
                         sentence.textContent = textContent;
                         sentence.setAttribute('data-original-text', textContent);
 
-                        if (textContent.includes('RED PATHWAY')) {
-                            sentence.classList.add('sentence-red');
-                        } else if (textContent.includes('PURPLE PATHWAY')) {
-                            sentence.classList.add('sentence-purple');
-                        } else if (textContent.includes('AMBER PATHWAY')) {
-                            sentence.classList.add('sentence-amber');
+                        // Check pathway based on mode
+                        if (mode === 'OP') {
+                            // OP mode: HIGH PRIORITY, URGENT, ROUTINE, REJECTED
+                            if (textContent.includes('URGENT')) {
+                                sentence.classList.add('sentence-red');
+                            } else if (textContent.includes('HIGH PRIORITY')) {
+                                sentence.classList.add('sentence-purple');
+                            } else if (textContent.includes('ROUTINE')) {
+                                sentence.classList.add('sentence-amber');
+                            } else if (textContent.includes('REJECTED')) {
+                                sentence.classList.add('sentence-green');
+                            } else {
+                                sentence.classList.add('sentence-green');
+                            }
                         } else {
-                            sentence.classList.add('sentence-green');
+                            // IP mode: RED PATHWAY, PURPLE PATHWAY, AMBER PATHWAY, REJECTED
+                            if (textContent.includes('RED PATHWAY')) {
+                                sentence.classList.add('sentence-red');
+                            } else if (textContent.includes('PURPLE PATHWAY')) {
+                                sentence.classList.add('sentence-purple');
+                            } else if (textContent.includes('AMBER PATHWAY')) {
+                                sentence.classList.add('sentence-amber');
+                            } else {
+                                sentence.classList.add('sentence-green');
+                            }
                         }
 
                         sentence.onclick = createSentenceClickHandler(textContent);
                         currentSubgroup.appendChild(sentence);
+                        
+                        // Set pathway for search/filter
+                        let pathwayType = 'green';
+                        if (mode === 'OP') {
+                            pathwayType = textContent.includes('URGENT') ? 'red' : 
+                                         textContent.includes('HIGH PRIORITY') ? 'purple' :
+                                         textContent.includes('ROUTINE') ? 'amber' :
+                                         textContent.includes('REJECTED') ? 'rejected' : 'green';
+                        } else {
+                            pathwayType = textContent.includes('RED PATHWAY') ? 'red' : 
+                                         textContent.includes('AMBER PATHWAY') ? 'amber' :
+                                         textContent.includes('PURPLE PATHWAY') ? 'purple' :
+                                         textContent.includes('REJECTED') ? 'rejected' : 'green';
+                        }
+                        
                         allSentences.push({
                             element: sentence,
                             text: textContent,
-                            pathway: textContent.includes('RED PATHWAY') ? 'red' : 
-                                     textContent.includes('AMBER PATHWAY') ? 'amber' :
-                                     textContent.includes('PURPLE PATHWAY') ? 'purple' :
-                                     textContent.includes('REJECTED') ? 'rejected' : 'green'
+                            pathway: pathwayType
                         });
                     }
                 });
