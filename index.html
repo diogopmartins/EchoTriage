@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>NGH Inpatient Triage</title>
+    <title>NGH Echo Triage</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <style>
         html, body {
@@ -283,6 +283,65 @@
             transform: translateX(28px);
         }
 
+        /* IP/OP Mode toggle styles */
+        .mode-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .mode-toggle-label {
+            font-size: 0.85rem;
+            color: #FFD67A;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .mode-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 32px;
+        }
+
+        .mode-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .mode-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2A2A2A;
+            border: 2px solid #FFD67A;
+            transition: 0.3s;
+            border-radius: 32px;
+        }
+
+        .mode-toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 2px;
+            bottom: 2px;
+            background-color: #FFD67A;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .mode-toggle-switch input:checked + .mode-toggle-slider:before {
+            transform: translateX(28px);
+        }
+
         /* Search functionality styles */
         .search-container {
             background: #1C1C1C;
@@ -392,6 +451,7 @@
         let allSentences = [];
         let currentSearchTerm = '';
         let includeExpectedDate = false;
+        let currentMode = 'IP'; // 'IP' or 'OP'
 
         function escapeRegex(string) {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -478,6 +538,83 @@
             }
         }
 
+        async function loadSentences(mode) {
+            const leftColumn = document.querySelector('.left-column');
+            const searchContainer = leftColumn.querySelector('.search-container');
+            
+            // Clear existing subgroups (preserve search container)
+            const subgroups = leftColumn.querySelectorAll('.subgroup');
+            subgroups.forEach(sub => sub.remove());
+            
+            // Clear sentences array
+            allSentences = [];
+            
+            const fileName = mode === 'IP' ? 'sentences-ip.txt' : 'sentences-op.txt';
+            
+            try {
+                const response = await fetch(fileName);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ${fileName}.`);
+                }
+
+                const text = await response.text();
+                const lines = text.split('\n');
+                let currentSubgroup = null;
+
+                lines.forEach(line => {
+                    if (line.startsWith('- ')) {
+                        const subgroup = document.createElement('div');
+                        subgroup.classList.add('subgroup');
+                        const title = document.createElement('h3');
+                        title.textContent = line.slice(2);
+                        subgroup.appendChild(title);
+                        leftColumn.insertBefore(subgroup, leftColumn.lastElementChild);
+                        currentSubgroup = subgroup;
+                    } else if (line.startsWith('-- ') && currentSubgroup) {
+                        const sentence = document.createElement('div');
+                        sentence.classList.add('sentence');
+                        const textContent = line.slice(3);
+                        sentence.textContent = textContent;
+                        sentence.setAttribute('data-original-text', textContent);
+
+                        if (textContent.includes('RED PATHWAY')) {
+                            sentence.classList.add('sentence-red');
+                        } else if (textContent.includes('PURPLE PATHWAY')) {
+                            sentence.classList.add('sentence-purple');
+                        } else if (textContent.includes('AMBER PATHWAY')) {
+                            sentence.classList.add('sentence-amber');
+                        } else {
+                            sentence.classList.add('sentence-green');
+                        }
+
+                        sentence.onclick = createSentenceClickHandler(textContent);
+                        currentSubgroup.appendChild(sentence);
+                        allSentences.push({
+                            element: sentence,
+                            text: textContent,
+                            pathway: textContent.includes('RED PATHWAY') ? 'red' : 
+                                     textContent.includes('AMBER PATHWAY') ? 'amber' :
+                                     textContent.includes('PURPLE PATHWAY') ? 'purple' :
+                                     textContent.includes('REJECTED') ? 'rejected' : 'green'
+                        });
+                    }
+                });
+                
+                // Clear search and reset filter
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.value = '';
+                    currentSearchTerm = '';
+                    filterSentences();
+                }
+            } catch (error) {
+                const errorMessage = document.createElement('div');
+                errorMessage.textContent = `Failed to load ${fileName}.`;
+                errorMessage.style.color = '#FF6B6B';
+                leftColumn.appendChild(errorMessage);
+            }
+        }
+
         function initializeSearch() {
             const leftColumn = document.querySelector('.left-column');
             const searchContainer = document.createElement('div');
@@ -522,16 +659,22 @@
             const pdfToggle = document.getElementById('pdfToggle');
             const currentSrc = embedEl.getAttribute('src');
 
-            if (currentSrc.includes('policy.pdf')) {
-                embedEl.setAttribute('src', 'bse.pdf');
+            const policyFile = currentMode === 'IP' ? 'policy-ip.pdf' : 'policy-op.pdf';
+            const bseFile = currentMode === 'IP' ? 'bse-ip.pdf' : 'bse-op.pdf';
+
+            if (currentSrc.includes('policy')) {
+                embedEl.setAttribute('src', bseFile);
                 pdfToggle.checked = true;
             } else {
-                embedEl.setAttribute('src', 'policy.pdf');
+                embedEl.setAttribute('src', policyFile);
                 pdfToggle.checked = false;
             }
         }
 
         window.onload = async function() {
+            // Set initial page title
+            document.title = 'NGH IP Triage';
+            
             const pdfToggle = document.getElementById('pdfToggle');
             pdfToggle.addEventListener('change', togglePDF);
 
@@ -540,63 +683,30 @@
                 includeExpectedDate = e.target.checked;
             });
 
-            const leftColumn = document.querySelector('.left-column');
-            try {
-                const response = await fetch('sentences.txt');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch sentences file.');
-                }
+            // Mode toggle event handler
+            const modeToggle = document.getElementById('modeToggle');
+            modeToggle.addEventListener('change', async (e) => {
+                currentMode = e.target.checked ? 'OP' : 'IP';
+                
+                // Update page title
+                document.title = `NGH ${currentMode} Triage`;
+                
+                // Reload sentences
+                await loadSentences(currentMode);
+                
+                // Reset PDF to default policy file for new mode
+                const embedEl = document.querySelector('.pdf-container embed');
+                const pdfToggle = document.getElementById('pdfToggle');
+                const policyFile = currentMode === 'IP' ? 'policy-ip.pdf' : 'policy-op.pdf';
+                embedEl.setAttribute('src', policyFile);
+                pdfToggle.checked = false;
+            });
 
-                const text = await response.text();
-                const lines = text.split('\n');
-                let currentSubgroup = null;
-
-                lines.forEach(line => {
-                    if (line.startsWith('- ')) {
-                        const subgroup = document.createElement('div');
-                        subgroup.classList.add('subgroup');
-                        const title = document.createElement('h3');
-                        title.textContent = line.slice(2);
-                        subgroup.appendChild(title);
-                        leftColumn.appendChild(subgroup);
-                        currentSubgroup = subgroup;
-                    } else if (line.startsWith('-- ') && currentSubgroup) {
-                        const sentence = document.createElement('div');
-                        sentence.classList.add('sentence');
-                        const textContent = line.slice(3);
-                        sentence.textContent = textContent;
-                        sentence.setAttribute('data-original-text', textContent);
-
-                        if (textContent.includes('RED PATHWAY')) {
-                            sentence.classList.add('sentence-red');
-                        } else if (textContent.includes('PURPLE PATHWAY')) {
-                            sentence.classList.add('sentence-purple');
-                        } else if (textContent.includes('AMBER PATHWAY')) {
-                            sentence.classList.add('sentence-amber');
-                        } else {
-                            sentence.classList.add('sentence-green');
-                        }
-
-                        sentence.onclick = createSentenceClickHandler(textContent);
-                        currentSubgroup.appendChild(sentence);
-                        allSentences.push({
-                            element: sentence,
-                            text: textContent,
-                            pathway: textContent.includes('RED PATHWAY') ? 'red' : 
-                                     textContent.includes('AMBER PATHWAY') ? 'amber' :
-                                     textContent.includes('PURPLE PATHWAY') ? 'purple' :
-                                     textContent.includes('REJECTED') ? 'rejected' : 'green'
-                        });
-                    }
-                });
-            } catch (error) {
-                const errorMessage = document.createElement('div');
-                errorMessage.textContent = 'Failed to load sentences.';
-                leftColumn.appendChild(errorMessage);
-            }
-
-            // Initialize search after sentences are loaded
+            // Initialize search (only once)
             initializeSearch();
+            
+            // Load initial sentences (IP mode)
+            await loadSentences('IP');
         };
 
         function showNotification(x, y) {
@@ -618,6 +728,14 @@
 <main>
     <div class="left-column"></div>
     <div class="right-column">
+        <div class="mode-toggle-container">
+            <div class="mode-toggle-label">IP</div>
+            <label class="mode-toggle-switch">
+                <input type="checkbox" id="modeToggle">
+                <span class="mode-toggle-slider"></span>
+            </label>
+            <div class="mode-toggle-label">OP</div>
+        </div>
         <div class="pdf-toggle-container">
             <div class="pdf-toggle-label">Dept Policy</div>
             <label class="pdf-toggle-switch">
@@ -627,7 +745,7 @@
             <div class="pdf-toggle-label">BSE Guidelines</div>
         </div>
         <div class="pdf-container">
-            <embed src="policy.pdf" type="application/pdf">
+            <embed src="policy-ip.pdf" type="application/pdf">
         </div>
         <div class="author-container">
             <div class="author-text">Diogo Martins 2024</div>
