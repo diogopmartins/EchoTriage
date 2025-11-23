@@ -590,10 +590,13 @@
                         title.textContent = line.slice(2);
                         subgroup.appendChild(title);
                         // Insert after search container, or append if no search container
-                        if (searchContainer && searchContainer.nextSibling) {
-                            leftColumn.insertBefore(subgroup, searchContainer.nextSibling);
-                        } else if (searchContainer) {
-                            leftColumn.insertBefore(subgroup, searchContainer.nextSibling);
+                        if (searchContainer) {
+                            // Insert after search container
+                            if (searchContainer.nextSibling) {
+                                leftColumn.insertBefore(subgroup, searchContainer.nextSibling);
+                            } else {
+                                leftColumn.appendChild(subgroup);
+                            }
                         } else {
                             leftColumn.appendChild(subgroup);
                         }
