@@ -224,22 +224,79 @@
             opacity: 1;
         }
 
-        /* Switch PDF button styling */
-        #toggleBtn {
-            background-color: #FFD67A;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 20px;
-            color: #1C1C1C;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            font-weight: bold;
+        /* PDF toggle switch styling */
+        .pdf-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 10px;
+            width: 100%;
+            justify-content: center;
         }
 
-        #toggleBtn:hover {
-            background-color: #FFC04D;
+        .pdf-toggle-label {
+            font-size: 0.85rem;
+            color: #FFD67A;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .pdf-toggle-label.active {
+            color: #FFD67A;
+        }
+
+        .pdf-toggle-label.inactive {
+            color: #666;
+        }
+
+        .pdf-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+
+        .pdf-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .pdf-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2A2A2A;
+            border: 2px solid #FFD67A;
+            transition: 0.3s;
+            border-radius: 30px;
+        }
+
+        .pdf-toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 2px;
+            bottom: 2px;
+            background-color: #FFD67A;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .pdf-toggle-switch input:checked + .pdf-toggle-slider {
+            background-color: #FFD67A;
+        }
+
+        .pdf-toggle-switch input:checked + .pdf-toggle-slider:before {
+            transform: translateX(30px);
+            background-color: #1C1C1C;
         }
 
         /* Search functionality styles */
@@ -478,22 +535,35 @@
         
         function togglePDF() {
             const embedEl = document.querySelector('.pdf-container embed');
-            const currentSrc = embedEl.getAttribute('src');
-            const switchBtn = document.getElementById('toggleBtn');
+            const pdfToggle = document.getElementById('pdfToggle');
+            const bseLabel = document.getElementById('bseLabel');
+            const deptLabel = document.getElementById('deptLabel');
 
-            if (currentSrc.includes('policy.pdf')) {
+            if (pdfToggle.checked) {
                 embedEl.setAttribute('src', 'bse.pdf');
-                switchBtn.textContent = 'Switch to Dept policy';
+                bseLabel.classList.add('active');
+                bseLabel.classList.remove('inactive');
+                deptLabel.classList.add('inactive');
+                deptLabel.classList.remove('active');
             } else {
                 embedEl.setAttribute('src', 'policy.pdf');
-                switchBtn.textContent = 'Switch to BSE guidelines';
+                deptLabel.classList.add('active');
+                deptLabel.classList.remove('inactive');
+                bseLabel.classList.add('inactive');
+                bseLabel.classList.remove('active');
             }
         }
 
         window.onload = async function() {
-            const switchBtn = document.getElementById('toggleBtn');
-            switchBtn.textContent = 'Switch to BSE guidelines';
-            switchBtn.addEventListener('click', togglePDF);
+            const pdfToggle = document.getElementById('pdfToggle');
+            const bseLabel = document.getElementById('bseLabel');
+            const deptLabel = document.getElementById('deptLabel');
+            
+            // Set initial state (Dept Policy is default, so toggle is unchecked)
+            deptLabel.classList.add('active');
+            bseLabel.classList.add('inactive');
+            
+            pdfToggle.addEventListener('change', togglePDF);
 
             const includeExpectedToggle = document.getElementById('includeExpectedToggle');
             includeExpectedToggle.addEventListener('change', (e) => {
@@ -578,7 +648,14 @@
 <main>
     <div class="left-column"></div>
     <div class="right-column">
-        <button id="toggleBtn"></button>
+        <div class="pdf-toggle-container">
+            <span class="pdf-toggle-label active" id="deptLabel">Dept Policy</span>
+            <label class="pdf-toggle-switch">
+                <input type="checkbox" id="pdfToggle">
+                <span class="pdf-toggle-slider"></span>
+            </label>
+            <span class="pdf-toggle-label inactive" id="bseLabel">BSE Guidelines</span>
+        </div>
         <div class="pdf-container">
             <embed src="policy.pdf" type="application/pdf">
         </div>
