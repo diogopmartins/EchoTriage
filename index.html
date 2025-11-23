@@ -239,10 +239,13 @@
 
         /* PDF toggle switch styling */
         .pdf-toggle-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: 100px 60px 100px;
             align-items: center;
+            justify-items: center;
             gap: 10px;
             margin-bottom: 10px;
+            width: 270px;
         }
 
         .pdf-toggle-container.hidden {
@@ -254,7 +257,6 @@
             color: #FFD67A;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            min-width: 100px;
             text-align: center;
         }
 
@@ -302,10 +304,13 @@
 
         /* IP/OP Mode toggle styles */
         .mode-toggle-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: 100px 60px 100px;
             align-items: center;
+            justify-items: center;
             gap: 10px;
             margin-bottom: 10px;
+            width: 270px;
         }
 
         .mode-toggle-label {
@@ -313,7 +318,6 @@
             color: #FFD67A;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            min-width: 100px;
             text-align: center;
         }
 
