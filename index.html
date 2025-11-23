@@ -105,6 +105,10 @@
             background-color: green;
         }
 
+        .sentence-blue:hover {
+            background-color: #4169E1;
+        }
+
         .pdf-container {
             border: 2px solid #FFD67A;
             border-radius: 5px;
@@ -630,7 +634,7 @@
                             } else if (textContent.includes('INDICATED')) {
                                 sentence.classList.add('sentence-amber');
                             } else if (textContent.includes('NOT INDICATED')) {
-                                sentence.classList.add('sentence-green');
+                                sentence.classList.add('sentence-blue');
                             } else {
                                 sentence.classList.add('sentence-green');
                             }
