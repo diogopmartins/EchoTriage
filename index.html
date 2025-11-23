@@ -265,10 +265,6 @@
             border: 2px solid #FFD67A;
             transition: 0.3s;
             border-radius: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 8px;
         }
 
         .pdf-toggle-slider:before {
@@ -281,32 +277,6 @@
             background-color: #FFD67A;
             transition: 0.3s;
             border-radius: 50%;
-            z-index: 2;
-        }
-
-        .pdf-toggle-slider .label-left,
-        .pdf-toggle-slider .label-right {
-            font-size: 0.7rem;
-            color: #FFD67A;
-            font-weight: bold;
-            z-index: 1;
-            transition: opacity 0.3s;
-        }
-
-        .pdf-toggle-slider .label-left {
-            opacity: 1;
-        }
-
-        .pdf-toggle-slider .label-right {
-            opacity: 0.5;
-        }
-
-        .pdf-toggle-switch input:checked + .pdf-toggle-slider .label-left {
-            opacity: 0.5;
-        }
-
-        .pdf-toggle-switch input:checked + .pdf-toggle-slider .label-right {
-            opacity: 1;
         }
 
         .pdf-toggle-switch input:checked + .pdf-toggle-slider:before {
@@ -652,10 +622,7 @@
             <div class="pdf-toggle-label">Dept Policy</div>
             <label class="pdf-toggle-switch">
                 <input type="checkbox" id="pdfToggle">
-                <span class="pdf-toggle-slider">
-                    <span class="label-left">Dept Policy</span>
-                    <span class="label-right">BSE Guidelines</span>
-                </span>
+                <span class="pdf-toggle-slider"></span>
             </label>
             <div class="pdf-toggle-label">BSE Guidelines</div>
         </div>
