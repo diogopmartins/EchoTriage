@@ -241,6 +241,91 @@
             opacity: 1;
         }
 
+        /* Popup modal for previous echo input */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #2A2A2A;
+            border: 2px solid #FFD67A;
+            border-radius: 5px;
+            padding: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .modal-content h3 {
+            color: #FFD67A;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            background-color: #1C1C1C;
+            border: 2px solid #FFD67A;
+            border-radius: 5px;
+            color: #FFFFFF;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        .modal-content input:focus {
+            outline: none;
+            border-color: #FFC04D;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            background-color: #FFD67A;
+            border: none;
+            border-radius: 4px;
+            color: #1C1C1C;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-btn:hover {
+            background-color: #FFC04D;
+        }
+
+        .modal-btn.cancel {
+            background-color: #2A2A2A;
+            color: #FFD67A;
+            border: 2px solid #FFD67A;
+        }
+
+        .modal-btn.cancel:hover {
+            background-color: #3A3A3A;
+        }
+
         /* PDF toggle switch styling */
         .pdf-toggle-container {
             display: grid;
@@ -483,34 +568,90 @@
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
+        function copyToClipboard(textContent, event) {
+            const now = new Date();
+            let hoursToAdd = 0;
+
+            // Check for IP pathway names
+            if (textContent.includes('RED PATHWAY')) {
+                hoursToAdd = 24;
+            } else if (textContent.includes('AMBER PATHWAY')) {
+                hoursToAdd = 72;
+            }
+            // Check for OP pathway names
+            else if (textContent.includes('URGENT')) {
+                hoursToAdd = 24;
+            } else if (textContent.includes('INDICATED')) {
+                hoursToAdd = 72;
+            }
+
+            let expected = '';
+            if (hoursToAdd > 0 && includeExpectedDate) {
+                const expectedDate = addWorkingHours(now, hoursToAdd);
+                expected = ` Expected scan until ${getDayName(expectedDate)}, ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`;
+            }
+
+            const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
+            const textToCopy = `${textContent} ${timestamp}`;
+            navigator.clipboard.writeText(textToCopy);
+            showNotification(event.clientX, event.clientY);
+        }
+
         function createSentenceClickHandler(textContent) {
             return function(event) {
-                const now = new Date();
-                let hoursToAdd = 0;
-
-                // Check for IP pathway names
-                if (textContent.includes('RED PATHWAY')) {
-                    hoursToAdd = 24;
-                } else if (textContent.includes('AMBER PATHWAY')) {
-                    hoursToAdd = 72;
+                // Check if sentence contains "PREVIOUS ECHO."
+                if (textContent.includes('PREVIOUS ECHO.')) {
+                    // Show popup to get previous echo text
+                    const modal = document.getElementById('previousEchoModal');
+                    const input = document.getElementById('previousEchoInput');
+                    const confirmBtn = document.getElementById('previousEchoConfirm');
+                    const cancelBtn = document.getElementById('previousEchoCancel');
+                    
+                    input.value = '';
+                    modal.classList.add('show');
+                    input.focus();
+                    
+                    // Handle confirm
+                    const handleConfirm = () => {
+                        const echoText = input.value.trim();
+                        if (echoText) {
+                            // Replace "PREVIOUS ECHO." with "PREVIOUS ECHO: "text""
+                            const modifiedText = textContent.replace('PREVIOUS ECHO.', `PREVIOUS ECHO: "${echoText}"`);
+                            copyToClipboard(modifiedText, event);
+                        } else {
+                            // If no text entered, just copy original
+                            copyToClipboard(textContent, event);
+                        }
+                        modal.classList.remove('show');
+                        confirmBtn.removeEventListener('click', handleConfirm);
+                        cancelBtn.removeEventListener('click', handleCancel);
+                        input.removeEventListener('keydown', handleKeyDown);
+                    };
+                    
+                    // Handle cancel
+                    const handleCancel = () => {
+                        modal.classList.remove('show');
+                        confirmBtn.removeEventListener('click', handleConfirm);
+                        cancelBtn.removeEventListener('click', handleCancel);
+                        input.removeEventListener('keydown', handleKeyDown);
+                    };
+                    
+                    // Handle Enter key
+                    const handleKeyDown = (e) => {
+                        if (e.key === 'Enter') {
+                            handleConfirm();
+                        } else if (e.key === 'Escape') {
+                            handleCancel();
+                        }
+                    };
+                    
+                    confirmBtn.addEventListener('click', handleConfirm);
+                    cancelBtn.addEventListener('click', handleCancel);
+                    input.addEventListener('keydown', handleKeyDown);
+                } else {
+                    // Normal copy without popup
+                    copyToClipboard(textContent, event);
                 }
-                // Check for OP pathway names
-                else if (textContent.includes('URGENT')) {
-                    hoursToAdd = 24;
-                } else if (textContent.includes('INDICATED')) {
-                    hoursToAdd = 72;
-                }
-
-                let expected = '';
-                if (hoursToAdd > 0 && includeExpectedDate) {
-                    const expectedDate = addWorkingHours(now, hoursToAdd);
-                    expected = ` Expected scan until ${getDayName(expectedDate)}, ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`;
-                }
-
-                const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
-                const textToCopy = `${textContent} ${timestamp}`;
-                navigator.clipboard.writeText(textToCopy);
-                showNotification(event.clientX, event.clientY);
             };
         }
 
@@ -944,5 +1085,17 @@
     </div>
 </main>
 <div id="notification" class="notification">Copied to clipboard!</div>
+
+<!-- Modal for Previous Echo input -->
+<div id="previousEchoModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>Enter Previous Echo Details</h3>
+        <input type="text" id="previousEchoInput" placeholder="Enter previous echo information..." autocomplete="off">
+        <div class="modal-buttons">
+            <button class="modal-btn cancel" id="previousEchoCancel">Cancel</button>
+            <button class="modal-btn" id="previousEchoConfirm">Confirm</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
