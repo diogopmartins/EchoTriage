@@ -817,14 +817,15 @@
                         // Check pathway based on mode
                         if (mode === 'OP') {
                             // OP mode: HIGH PRIORITY, URGENT, INDICATED, NOT INDICATED
-                            if (textContent.includes('URGENT')) {
+                            // Check NOT INDICATED first (before INDICATED) to avoid substring match
+                            if (textContent.includes('NOT INDICATED')) {
+                                sentence.classList.add('sentence-blue');
+                            } else if (textContent.includes('URGENT')) {
                                 sentence.classList.add('sentence-red');
                             } else if (textContent.includes('HIGH PRIORITY')) {
                                 sentence.classList.add('sentence-purple');
                             } else if (textContent.includes('INDICATED')) {
                                 sentence.classList.add('sentence-amber');
-                            } else if (textContent.includes('NOT INDICATED')) {
-                                sentence.classList.add('sentence-blue');
                             } else {
                                 sentence.classList.add('sentence-green');
                             }
@@ -847,10 +848,11 @@
                         // Set pathway for search/filter
                         let pathwayType = 'green';
                         if (mode === 'OP') {
-                            pathwayType = textContent.includes('URGENT') ? 'red' : 
+                            // Check NOT INDICATED first (before INDICATED) to avoid substring match
+                            pathwayType = textContent.includes('NOT INDICATED') ? 'rejected' :
+                                         textContent.includes('URGENT') ? 'red' : 
                                          textContent.includes('HIGH PRIORITY') ? 'purple' :
-                                         textContent.includes('INDICATED') ? 'amber' :
-                                         textContent.includes('NOT INDICATED') ? 'rejected' : 'green';
+                                         textContent.includes('INDICATED') ? 'amber' : 'green';
                         } else {
                             pathwayType = textContent.includes('RED PATHWAY') ? 'red' : 
                                          textContent.includes('AMBER PATHWAY') ? 'amber' :
