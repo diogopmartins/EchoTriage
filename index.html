@@ -484,9 +484,16 @@
                 const now = new Date();
                 let hoursToAdd = 0;
 
+                // Check for IP pathway names
                 if (textContent.includes('RED PATHWAY')) {
                     hoursToAdd = 24;
                 } else if (textContent.includes('AMBER PATHWAY')) {
+                    hoursToAdd = 72;
+                }
+                // Check for OP pathway names
+                else if (textContent.includes('URGENT')) {
+                    hoursToAdd = 24;
+                } else if (textContent.includes('ROUTINE')) {
                     hoursToAdd = 72;
                 }
 
