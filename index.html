@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>NGH Echo Triage</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         html, body {
             margin: 0;
@@ -117,20 +118,77 @@
             border-radius: 5px;
             background: #1C1C1C;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            flex-direction: column;
             flex: 1;
             width: 100%;
             margin-bottom: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            overflow: hidden;
         }
 
-        .pdf-container embed {
-            width: 100%;
-            height: 100%;
-            border: none;
-            min-height: 400px;
+        .pdf-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background-color: #2A2A2A;
+            border-bottom: 1px solid #FFD67A;
+            flex-wrap: wrap;
+        }
+
+        .pdf-control-btn {
+            background-color: #2A2A2A;
+            border: 2px solid #FFD67A;
+            border-radius: 4px;
+            color: #FFD67A;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .pdf-control-btn:hover:not(:disabled) {
+            background-color: #FFD67A;
+            color: #1C1C1C;
+        }
+
+        .pdf-control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pdf-page-info {
+            color: #FFD67A;
+            font-size: 0.85rem;
+            padding: 0 10px;
+        }
+
+        .pdf-page-input {
+            width: 50px;
+            padding: 4px;
+            background-color: #1C1C1C;
+            border: 2px solid #FFD67A;
+            border-radius: 4px;
+            color: #FFFFFF;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .pdf-viewer {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .pdf-viewer canvas {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .pdf-error {
@@ -575,6 +633,12 @@
         let currentSearchTerm = '';
         let includeExpectedDate = false;
         let currentMode = 'IP'; // 'IP' or 'OP'
+        
+        // PDF.js variables
+        let pdfDoc = null;
+        let currentPage = 1;
+        let currentScale = 1.0;
+        let pdfRenderTask = null;
 
         function escapeRegex(string) {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -924,53 +988,107 @@
             });
         }
         
-        async function togglePDF() {
-            const embedEl = document.querySelector('.pdf-container embed');
-            const pdfToggle = document.getElementById('pdfToggle');
+        // PDF.js functions
+        async function loadPDF(fileName) {
+            const pdfViewer = document.getElementById('pdfViewer');
             const pdfContainer = document.querySelector('.pdf-container');
-            const currentSrc = embedEl.getAttribute('src');
-
-            const policyFile = currentMode === 'IP' ? 'policy-ip.pdf' : 'policy-op.pdf';
-            const bseFile = currentMode === 'IP' ? 'bse-ip.pdf' : 'bse-op.pdf';
-
-            const targetFile = currentSrc.includes('policy') ? bseFile : policyFile;
-
+            
             try {
-                const response = await fetch(targetFile, { method: 'HEAD' });
-                if (response.ok) {
-                    embedEl.setAttribute('src', targetFile);
-                    embedEl.style.display = 'block';
-                    // Remove any error message
-                    const errorMsg = pdfContainer.querySelector('.pdf-error');
-                    if (errorMsg) errorMsg.remove();
-                    
-                    if (currentSrc.includes('policy')) {
-                        pdfToggle.checked = true;
-                    } else {
-                        pdfToggle.checked = false;
-                    }
-                } else {
-                    // File doesn't exist
-                    embedEl.style.display = 'none';
-                    let errorMsg = pdfContainer.querySelector('.pdf-error');
-                    if (!errorMsg) {
-                        errorMsg = document.createElement('div');
-                        errorMsg.className = 'pdf-error';
-                        errorMsg.textContent = `${targetFile} not found. Please add the file.`;
-                        pdfContainer.appendChild(errorMsg);
-                    }
+                // Cancel any ongoing render
+                if (pdfRenderTask) {
+                    pdfRenderTask.cancel();
                 }
+                
+                // Clear viewer
+                pdfViewer.innerHTML = '';
+                
+                // Remove error message
+                const errorMsg = pdfContainer.querySelector('.pdf-error');
+                if (errorMsg) errorMsg.remove();
+                
+                // Set up PDF.js worker
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                
+                // Load PDF
+                const loadingTask = pdfjsLib.getDocument(fileName);
+                pdfDoc = await loadingTask.promise;
+                
+                currentPage = 1;
+                currentScale = 1.0;
+                updatePageInfo();
+                renderPage();
+                
+                // Enable controls
+                enablePDFControls(true);
             } catch (error) {
-                // File doesn't exist
-                embedEl.style.display = 'none';
+                console.error('Error loading PDF:', error);
+                pdfViewer.innerHTML = '';
                 let errorMsg = pdfContainer.querySelector('.pdf-error');
                 if (!errorMsg) {
                     errorMsg = document.createElement('div');
                     errorMsg.className = 'pdf-error';
-                    errorMsg.textContent = `${targetFile} not found. Please add the file.`;
+                    errorMsg.textContent = `${fileName} not found or could not be loaded.`;
                     pdfContainer.appendChild(errorMsg);
                 }
+                enablePDFControls(false);
             }
+        }
+        
+        function renderPage() {
+            if (!pdfDoc) return;
+            
+            const viewer = document.getElementById('pdfViewer');
+            
+            // Cancel previous render
+            if (pdfRenderTask) {
+                pdfRenderTask.cancel();
+            }
+            
+            viewer.innerHTML = '';
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            viewer.appendChild(canvas);
+            
+            pdfDoc.getPage(currentPage).then(page => {
+                const viewport = page.getViewport({ scale: currentScale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport
+                };
+                
+                pdfRenderTask = page.render(renderContext);
+                updatePageInfo();
+            });
+        }
+        
+        function updatePageInfo() {
+            if (pdfDoc) {
+                document.getElementById('pdfTotalPages').textContent = pdfDoc.numPages;
+                document.getElementById('pdfPageInput').value = currentPage;
+                document.getElementById('pdfPrevPage').disabled = currentPage <= 1;
+                document.getElementById('pdfNextPage').disabled = currentPage >= pdfDoc.numPages;
+            }
+        }
+        
+        function enablePDFControls(enabled) {
+            const controls = ['pdfPrevPage', 'pdfNextPage', 'pdfZoomOut', 'pdfZoomIn', 'pdfFitWidth', 'pdfActualSize', 'pdfPageInput'];
+            controls.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.disabled = !enabled;
+            });
+        }
+        
+        async function togglePDF() {
+            const pdfToggle = document.getElementById('pdfToggle');
+            const policyFile = currentMode === 'IP' ? 'policy-ip.pdf' : 'policy-op.pdf';
+            const bseFile = currentMode === 'IP' ? 'bse-ip.pdf' : 'bse-op.pdf';
+            
+            // Determine target file based on toggle state
+            const targetFile = pdfToggle.checked ? bseFile : policyFile;
+            await loadPDF(targetFile);
         }
 
         window.onload = async function() {
@@ -1012,70 +1130,13 @@
                 await loadSentences(currentMode);
                 
                 // Load appropriate PDF for mode
-                const embedEl = document.querySelector('.pdf-container embed');
-                const pdfToggle = document.getElementById('pdfToggle');
-                const pdfContainer = document.querySelector('.pdf-container');
-                
                 if (currentMode === 'OP') {
                     // OP mode: only BSE guidelines
-                    const bseFile = 'bse-op.pdf';
-                    try {
-                        const response = await fetch(bseFile, { method: 'HEAD' });
-                        if (response.ok) {
-                            embedEl.setAttribute('src', bseFile);
-                            embedEl.style.display = 'block';
-                            const errorMsg = pdfContainer.querySelector('.pdf-error');
-                            if (errorMsg) errorMsg.remove();
-                        } else {
-                            embedEl.style.display = 'none';
-                            let errorMsg = pdfContainer.querySelector('.pdf-error');
-                            if (!errorMsg) {
-                                errorMsg = document.createElement('div');
-                                errorMsg.className = 'pdf-error';
-                                errorMsg.textContent = `${bseFile} not found. Please add the file.`;
-                                pdfContainer.appendChild(errorMsg);
-                            }
-                        }
-                    } catch (error) {
-                        embedEl.style.display = 'none';
-                        let errorMsg = pdfContainer.querySelector('.pdf-error');
-                        if (!errorMsg) {
-                            errorMsg = document.createElement('div');
-                            errorMsg.className = 'pdf-error';
-                            errorMsg.textContent = `${bseFile} not found. Please add the file.`;
-                            pdfContainer.appendChild(errorMsg);
-                        }
-                    }
+                    await loadPDF('bse-op.pdf');
                 } else {
                     // IP mode: default to policy file
-                    const policyFile = 'policy-ip.pdf';
-                    try {
-                        const response = await fetch(policyFile, { method: 'HEAD' });
-                        if (response.ok) {
-                            embedEl.setAttribute('src', policyFile);
-                            embedEl.style.display = 'block';
-                            const errorMsg = pdfContainer.querySelector('.pdf-error');
-                            if (errorMsg) errorMsg.remove();
-                        } else {
-                            embedEl.style.display = 'none';
-                            let errorMsg = pdfContainer.querySelector('.pdf-error');
-                            if (!errorMsg) {
-                                errorMsg = document.createElement('div');
-                                errorMsg.className = 'pdf-error';
-                                errorMsg.textContent = `${policyFile} not found. Please add the file.`;
-                                pdfContainer.appendChild(errorMsg);
-                            }
-                        }
-                    } catch (error) {
-                        embedEl.style.display = 'none';
-                        let errorMsg = pdfContainer.querySelector('.pdf-error');
-                        if (!errorMsg) {
-                            errorMsg = document.createElement('div');
-                            errorMsg.className = 'pdf-error';
-                            errorMsg.textContent = `${policyFile} not found. Please add the file.`;
-                            pdfContainer.appendChild(errorMsg);
-                        }
-                    }
+                    await loadPDF('policy-ip.pdf');
+                    const pdfToggle = document.getElementById('pdfToggle');
                     pdfToggle.checked = false;
                 }
             });
@@ -1085,6 +1146,63 @@
             
             // Load initial sentences (IP mode)
             await loadSentences('IP');
+            
+            // Load initial PDF (IP mode)
+            await loadPDF('policy-ip.pdf');
+            
+            // PDF control event listeners
+            document.getElementById('pdfPrevPage').addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderPage();
+                }
+            });
+            
+            document.getElementById('pdfNextPage').addEventListener('click', () => {
+                if (pdfDoc && currentPage < pdfDoc.numPages) {
+                    currentPage++;
+                    renderPage();
+                }
+            });
+            
+            document.getElementById('pdfZoomIn').addEventListener('click', () => {
+                currentScale = Math.min(currentScale + 0.25, 3.0);
+                renderPage();
+            });
+            
+            document.getElementById('pdfZoomOut').addEventListener('click', () => {
+                currentScale = Math.max(currentScale - 0.25, 0.5);
+                renderPage();
+            });
+            
+            document.getElementById('pdfFitWidth').addEventListener('click', async () => {
+                if (pdfDoc) {
+                    const viewer = document.getElementById('pdfViewer');
+                    const page = await pdfDoc.getPage(currentPage);
+                    const viewport = page.getViewport({ scale: 1.0 });
+                    const containerWidth = viewer.clientWidth - 20; // Account for padding
+                    currentScale = containerWidth / viewport.width;
+                    renderPage();
+                }
+            });
+            
+            document.getElementById('pdfActualSize').addEventListener('click', () => {
+                currentScale = 1.0;
+                renderPage();
+            });
+            
+            document.getElementById('pdfPageInput').addEventListener('change', (e) => {
+                const pageNum = parseInt(e.target.value);
+                if (pdfDoc && pageNum >= 1 && pageNum <= pdfDoc.numPages) {
+                    currentPage = pageNum;
+                    renderPage();
+                } else {
+                    e.target.value = currentPage;
+                }
+            });
+            
+            // Initialize controls as disabled
+            enablePDFControls(false);
         };
 
         function showNotification(x, y) {
