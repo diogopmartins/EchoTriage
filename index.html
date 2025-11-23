@@ -175,11 +175,8 @@
 
         /* Search functionality styles */
         .search-container {
-            position: sticky;
-            top: 0;
             background: #1C1C1C;
             padding: 15px 0;
-            z-index: 100;
             border-bottom: 2px solid #FFD67A;
             margin-bottom: 15px;
         }
@@ -206,38 +203,37 @@
             color: #888;
         }
 
-        .search-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
-        #clearSearchBtn {
-            position: absolute;
-            right: 10px;
-            background: none;
-            border: none;
-            color: #FFD67A;
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 5px 10px;
-            display: none;
-            transition: color 0.3s ease;
-        }
-
-        #clearSearchBtn:hover {
-            color: #FFC04D;
-        }
-
-        #clearSearchBtn.visible {
-            display: block;
-        }
-
         .search-results-info {
             margin-top: 8px;
             color: #FFD67A;
             font-size: 0.85rem;
             text-align: right;
+        }
+
+        #clearSearchBtn {
+            background-color: #2A2A2A;
+            border: 2px solid #FFD67A;
+            border-radius: 5px;
+            color: #FFD67A;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            margin-top: 10px;
+            display: none;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        #clearSearchBtn:hover {
+            background-color: #FFD67A;
+            color: #1C1C1C;
+            border-color: #FFC04D;
+        }
+
+        #clearSearchBtn.visible {
+            display: block;
         }
 
         .subgroup.hidden {
@@ -377,11 +373,9 @@
             const searchContainer = document.createElement('div');
             searchContainer.classList.add('search-container');
             searchContainer.innerHTML = `
-                <div class="search-wrapper">
-                    <input type="text" id="searchInput" placeholder="Search sentences... (Press / to focus)" autocomplete="off">
-                    <button id="clearSearchBtn" title="Clear search">×</button>
-                </div>
+                <input type="text" id="searchInput" placeholder="Search sentences..." autocomplete="off">
                 <div class="search-results-info"></div>
+                <button id="clearSearchBtn" title="Clear search">Clear Search</button>
             `;
             leftColumn.insertBefore(searchContainer, leftColumn.firstChild);
 
@@ -402,14 +396,8 @@
                 searchInput.focus();
             });
 
-            // Keyboard shortcut: Press / to focus search
+            // Escape to clear search
             document.addEventListener('keydown', (e) => {
-                if (e.key === '/' && e.target !== searchInput && !e.ctrlKey && !e.metaKey) {
-                    e.preventDefault();
-                    searchInput.focus();
-                    searchInput.select();
-                }
-                // Escape to clear search
                 if (e.key === 'Escape' && e.target === searchInput) {
                     searchInput.value = '';
                     currentSearchTerm = '';
