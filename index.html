@@ -81,15 +81,11 @@
             line-height: 1.4;
             color: #FFFFFF;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
         }
 
         .sentence:hover {
             transform: scale(1.02);
-            border-color: #FFD700;
-        }
-
-        .sentence-blue:hover {
             border-color: #FFD700;
         }
 
@@ -110,12 +106,12 @@
         }
 
         .sentence-blue {
-            border-color: #4169E1;
+            border: 2px solid #4169E1 !important;
         }
 
         .sentence-blue:hover {
             background-color: #4169E1;
-            border-color: #FFD700;
+            border-color: #FFD700 !important;
         }
 
         .pdf-container {
