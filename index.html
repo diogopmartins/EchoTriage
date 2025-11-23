@@ -123,6 +123,14 @@
             width: 100%;
             height: 100%;
             border: none;
+            min-height: 400px;
+        }
+
+        .pdf-error {
+            color: #FFD67A;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
         }
 
         .author-container {
@@ -235,6 +243,10 @@
             align-items: center;
             gap: 10px;
             margin-bottom: 10px;
+        }
+
+        .pdf-toggle-container.hidden {
+            display: none;
         }
 
         .pdf-toggle-label {
@@ -659,20 +671,52 @@
             });
         }
         
-        function togglePDF() {
+        async function togglePDF() {
             const embedEl = document.querySelector('.pdf-container embed');
             const pdfToggle = document.getElementById('pdfToggle');
+            const pdfContainer = document.querySelector('.pdf-container');
             const currentSrc = embedEl.getAttribute('src');
 
             const policyFile = currentMode === 'IP' ? 'policy-ip.pdf' : 'policy-op.pdf';
             const bseFile = currentMode === 'IP' ? 'bse-ip.pdf' : 'bse-op.pdf';
 
-            if (currentSrc.includes('policy')) {
-                embedEl.setAttribute('src', bseFile);
-                pdfToggle.checked = true;
-            } else {
-                embedEl.setAttribute('src', policyFile);
-                pdfToggle.checked = false;
+            const targetFile = currentSrc.includes('policy') ? bseFile : policyFile;
+
+            try {
+                const response = await fetch(targetFile, { method: 'HEAD' });
+                if (response.ok) {
+                    embedEl.setAttribute('src', targetFile);
+                    embedEl.style.display = 'block';
+                    // Remove any error message
+                    const errorMsg = pdfContainer.querySelector('.pdf-error');
+                    if (errorMsg) errorMsg.remove();
+                    
+                    if (currentSrc.includes('policy')) {
+                        pdfToggle.checked = true;
+                    } else {
+                        pdfToggle.checked = false;
+                    }
+                } else {
+                    // File doesn't exist
+                    embedEl.style.display = 'none';
+                    let errorMsg = pdfContainer.querySelector('.pdf-error');
+                    if (!errorMsg) {
+                        errorMsg = document.createElement('div');
+                        errorMsg.className = 'pdf-error';
+                        errorMsg.textContent = `${targetFile} not found. Please add the file.`;
+                        pdfContainer.appendChild(errorMsg);
+                    }
+                }
+            } catch (error) {
+                // File doesn't exist
+                embedEl.style.display = 'none';
+                let errorMsg = pdfContainer.querySelector('.pdf-error');
+                if (!errorMsg) {
+                    errorMsg = document.createElement('div');
+                    errorMsg.className = 'pdf-error';
+                    errorMsg.textContent = `${targetFile} not found. Please add the file.`;
+                    pdfContainer.appendChild(errorMsg);
+                }
             }
         }
 
@@ -691,6 +735,7 @@
             // Mode toggle event handler
             const modeToggle = document.getElementById('modeToggle');
             const expectedToggleContainer = document.querySelector('.toggle-container');
+            const pdfToggleContainer = document.querySelector('.pdf-toggle-container');
             modeToggle.addEventListener('change', async (e) => {
                 currentMode = e.target.checked ? 'OP' : 'IP';
                 
@@ -702,19 +747,84 @@
                     expectedToggleContainer.classList.add('hidden');
                     includeExpectedDate = false;
                     includeExpectedToggle.checked = false;
+                    // Hide PDF toggle in OP mode (only BSE guidelines available)
+                    pdfToggleContainer.classList.add('hidden');
                 } else {
                     expectedToggleContainer.classList.remove('hidden');
+                    // Show PDF toggle in IP mode
+                    pdfToggleContainer.classList.remove('hidden');
                 }
                 
                 // Reload sentences
                 await loadSentences(currentMode);
                 
-                // Reset PDF to default policy file for new mode
+                // Load appropriate PDF for mode
                 const embedEl = document.querySelector('.pdf-container embed');
                 const pdfToggle = document.getElementById('pdfToggle');
-                const policyFile = currentMode === 'IP' ? 'policy-ip.pdf' : 'policy-op.pdf';
-                embedEl.setAttribute('src', policyFile);
-                pdfToggle.checked = false;
+                const pdfContainer = document.querySelector('.pdf-container');
+                
+                if (currentMode === 'OP') {
+                    // OP mode: only BSE guidelines
+                    const bseFile = 'bse-op.pdf';
+                    try {
+                        const response = await fetch(bseFile, { method: 'HEAD' });
+                        if (response.ok) {
+                            embedEl.setAttribute('src', bseFile);
+                            embedEl.style.display = 'block';
+                            const errorMsg = pdfContainer.querySelector('.pdf-error');
+                            if (errorMsg) errorMsg.remove();
+                        } else {
+                            embedEl.style.display = 'none';
+                            let errorMsg = pdfContainer.querySelector('.pdf-error');
+                            if (!errorMsg) {
+                                errorMsg = document.createElement('div');
+                                errorMsg.className = 'pdf-error';
+                                errorMsg.textContent = `${bseFile} not found. Please add the file.`;
+                                pdfContainer.appendChild(errorMsg);
+                            }
+                        }
+                    } catch (error) {
+                        embedEl.style.display = 'none';
+                        let errorMsg = pdfContainer.querySelector('.pdf-error');
+                        if (!errorMsg) {
+                            errorMsg = document.createElement('div');
+                            errorMsg.className = 'pdf-error';
+                            errorMsg.textContent = `${bseFile} not found. Please add the file.`;
+                            pdfContainer.appendChild(errorMsg);
+                        }
+                    }
+                } else {
+                    // IP mode: default to policy file
+                    const policyFile = 'policy-ip.pdf';
+                    try {
+                        const response = await fetch(policyFile, { method: 'HEAD' });
+                        if (response.ok) {
+                            embedEl.setAttribute('src', policyFile);
+                            embedEl.style.display = 'block';
+                            const errorMsg = pdfContainer.querySelector('.pdf-error');
+                            if (errorMsg) errorMsg.remove();
+                        } else {
+                            embedEl.style.display = 'none';
+                            let errorMsg = pdfContainer.querySelector('.pdf-error');
+                            if (!errorMsg) {
+                                errorMsg = document.createElement('div');
+                                errorMsg.className = 'pdf-error';
+                                errorMsg.textContent = `${policyFile} not found. Please add the file.`;
+                                pdfContainer.appendChild(errorMsg);
+                            }
+                        }
+                    } catch (error) {
+                        embedEl.style.display = 'none';
+                        let errorMsg = pdfContainer.querySelector('.pdf-error');
+                        if (!errorMsg) {
+                            errorMsg = document.createElement('div');
+                            errorMsg.className = 'pdf-error';
+                            errorMsg.textContent = `${policyFile} not found. Please add the file.`;
+                            pdfContainer.appendChild(errorMsg);
+                        }
+                    }
+                    pdfToggle.checked = false;
+                }
             });
 
             // Initialize search (only once)
