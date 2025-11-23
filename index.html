@@ -172,6 +172,89 @@
         #toggleBtn:hover {
             background-color: #FFC04D;
         }
+
+        /* Search functionality styles */
+        .search-container {
+            position: sticky;
+            top: 0;
+            background: #1C1C1C;
+            padding: 15px 0;
+            z-index: 100;
+            border-bottom: 2px solid #FFD67A;
+            margin-bottom: 15px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #2A2A2A;
+            border: 2px solid #FFD67A;
+            border-radius: 5px;
+            color: #FFFFFF;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #FFC04D;
+            box-shadow: 0 0 8px rgba(255, 214, 122, 0.3);
+        }
+
+        #searchInput::placeholder {
+            color: #888;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        #clearSearchBtn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #FFD67A;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px 10px;
+            display: none;
+            transition: color 0.3s ease;
+        }
+
+        #clearSearchBtn:hover {
+            color: #FFC04D;
+        }
+
+        #clearSearchBtn.visible {
+            display: block;
+        }
+
+        .search-results-info {
+            margin-top: 8px;
+            color: #FFD67A;
+            font-size: 0.85rem;
+            text-align: right;
+        }
+
+        .subgroup.hidden {
+            display: none;
+        }
+
+        .sentence.hidden {
+            display: none;
+        }
+
+        .sentence .highlight {
+            background-color: #FFD67A;
+            color: #1C1C1C;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
     </style>
 
     <script>
@@ -199,6 +282,142 @@
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         return days[d.getDay()];
     }
+
+        let allSentences = [];
+        let currentSearchTerm = '';
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function createSentenceClickHandler(textContent) {
+            return function(event) {
+                const now = new Date();
+                let hoursToAdd = 0;
+
+                if (textContent.includes('RED PATHWAY')) {
+                    hoursToAdd = 24;
+                } else if (textContent.includes('AMBER PATHWAY')) {
+                    hoursToAdd = 72;
+                }
+
+                let expected = '';
+                if (hoursToAdd > 0) {
+                    const expectedDate = addWorkingHours(now, hoursToAdd);
+                    expected = ``;
+                // ` Expected scan until ${getDayName(expectedDate)}, ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`
+                }
+
+                const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
+                const textToCopy = `${textContent} ${timestamp}`;
+                navigator.clipboard.writeText(textToCopy);
+                showNotification(event.clientX, event.clientY);
+            };
+        }
+
+        function highlightText(element, searchTerm) {
+            const text = element.textContent;
+            const regex = new RegExp(`(${escapeRegex(searchTerm)})`, 'gi');
+            const highlighted = text.replace(regex, '<span class="highlight">$1</span>');
+            element.innerHTML = highlighted;
+        }
+
+        function filterSentences() {
+            const sentences = document.querySelectorAll('.sentence');
+            const resultsInfo = document.querySelector('.search-results-info');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            let visibleCount = 0;
+
+            sentences.forEach(sentence => {
+                const text = sentence.textContent.toLowerCase();
+                const textContent = sentence.getAttribute('data-original-text') || sentence.textContent;
+                
+                // Check search term match
+                const matchesSearch = !currentSearchTerm || text.includes(currentSearchTerm);
+
+                if (matchesSearch) {
+                    sentence.classList.remove('hidden');
+                    visibleCount++;
+                    
+                    // Highlight search term (onclick handler persists through innerHTML changes)
+                    if (currentSearchTerm) {
+                        sentence.textContent = textContent;
+                        highlightText(sentence, currentSearchTerm);
+                    } else {
+                        sentence.textContent = textContent;
+                    }
+                } else {
+                    sentence.classList.add('hidden');
+                }
+            });
+
+            // Hide subgroups with no visible sentences
+            const subgroups = document.querySelectorAll('.subgroup');
+            subgroups.forEach(subgroup => {
+                const visibleSentences = subgroup.querySelectorAll('.sentence:not(.hidden)');
+                if (visibleSentences.length === 0) {
+                    subgroup.classList.add('hidden');
+                } else {
+                    subgroup.classList.remove('hidden');
+                }
+            });
+
+            // Update results info and clear button visibility
+            if (currentSearchTerm) {
+                resultsInfo.textContent = `${visibleCount} result${visibleCount !== 1 ? 's' : ''} found`;
+                clearBtn.classList.add('visible');
+            } else {
+                resultsInfo.textContent = '';
+                clearBtn.classList.remove('visible');
+            }
+        }
+
+        function initializeSearch() {
+            const leftColumn = document.querySelector('.left-column');
+            const searchContainer = document.createElement('div');
+            searchContainer.classList.add('search-container');
+            searchContainer.innerHTML = `
+                <div class="search-wrapper">
+                    <input type="text" id="searchInput" placeholder="Search sentences... (Press / to focus)" autocomplete="off">
+                    <button id="clearSearchBtn" title="Clear search">×</button>
+                </div>
+                <div class="search-results-info"></div>
+            `;
+            leftColumn.insertBefore(searchContainer, leftColumn.firstChild);
+
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+
+            // Search input event
+            searchInput.addEventListener('input', (e) => {
+                currentSearchTerm = e.target.value.toLowerCase();
+                filterSentences();
+            });
+
+            // Clear button event
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                currentSearchTerm = '';
+                filterSentences();
+                searchInput.focus();
+            });
+
+            // Keyboard shortcut: Press / to focus search
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '/' && e.target !== searchInput && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    searchInput.focus();
+                    searchInput.select();
+                }
+                // Escape to clear search
+                if (e.key === 'Escape' && e.target === searchInput) {
+                    searchInput.value = '';
+                    currentSearchTerm = '';
+                    filterSentences();
+                    searchInput.blur();
+                }
+            });
+        }
         
         function togglePDF() {
             const embedEl = document.querySelector('.pdf-container embed');
@@ -242,9 +461,10 @@
                     } else if (line.startsWith('-- ') && currentSubgroup) {
                         const sentence = document.createElement('div');
                         sentence.classList.add('sentence');
-                        sentence.textContent = line.slice(3);
+                        const textContent = line.slice(3);
+                        sentence.textContent = textContent;
+                        sentence.setAttribute('data-original-text', textContent);
 
-                        const textContent = sentence.textContent;
                         if (textContent.includes('RED PATHWAY')) {
                             sentence.classList.add('sentence-red');
                         } else if (textContent.includes('PURPLE PATHWAY')) {
@@ -255,29 +475,16 @@
                             sentence.classList.add('sentence-green');
                         }
 
-                        sentence.addEventListener('click', (event) => {
-                            const now = new Date();
-                            let hoursToAdd = 0;
-
-                            if (textContent.includes('RED PATHWAY')) {
-                                hoursToAdd = 24;
-                            } else if (textContent.includes('AMBER PATHWAY')) {
-                                hoursToAdd = 72;
-                            }
-
-                            let expected = '';
-                            if (hoursToAdd > 0) {
-                                const expectedDate = addWorkingHours(now, hoursToAdd);
-                                expected = ``;
-                            // ` Expected scan until ${getDayName(expectedDate)}, ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`
-                            }
-
-                            const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
-                            const textToCopy = `${textContent} ${timestamp}`;
-                            navigator.clipboard.writeText(textToCopy);
-                            showNotification(event.clientX, event.clientY);
-                        });
+                        sentence.onclick = createSentenceClickHandler(textContent);
                         currentSubgroup.appendChild(sentence);
+                        allSentences.push({
+                            element: sentence,
+                            text: textContent,
+                            pathway: textContent.includes('RED PATHWAY') ? 'red' : 
+                                     textContent.includes('AMBER PATHWAY') ? 'amber' :
+                                     textContent.includes('PURPLE PATHWAY') ? 'purple' :
+                                     textContent.includes('REJECTED') ? 'rejected' : 'green'
+                        });
                     }
                 });
             } catch (error) {
@@ -285,6 +492,9 @@
                 errorMessage.textContent = 'Failed to load sentences.';
                 leftColumn.appendChild(errorMessage);
             }
+
+            // Initialize search after sentences are loaded
+            initializeSearch();
         };
 
         function showNotification(x, y) {
