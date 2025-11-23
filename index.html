@@ -240,12 +240,12 @@
         /* PDF toggle switch styling */
         .pdf-toggle-container {
             display: grid;
-            grid-template-columns: 100px 60px 100px;
+            grid-template-columns: 100px 60px auto;
             align-items: center;
             justify-items: center;
             gap: 10px;
             margin-bottom: 10px;
-            width: 270px;
+            width: auto;
         }
 
         .pdf-toggle-container.hidden {
@@ -258,6 +258,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             text-align: center;
+            white-space: nowrap;
         }
 
         .pdf-toggle-switch {
