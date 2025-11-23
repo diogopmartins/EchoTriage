@@ -277,7 +277,8 @@
             letter-spacing: 1px;
         }
 
-        .modal-content input {
+        .modal-content input,
+        .modal-content textarea {
             width: 100%;
             padding: 12px;
             background-color: #1C1C1C;
@@ -287,9 +288,16 @@
             font-size: 1rem;
             box-sizing: border-box;
             margin-bottom: 15px;
+            font-family: Arial, sans-serif;
         }
 
-        .modal-content input:focus {
+        .modal-content textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .modal-content input:focus,
+        .modal-content textarea:focus {
             outline: none;
             border-color: #FFC04D;
         }
@@ -1090,7 +1098,7 @@
 <div id="previousEchoModal" class="modal-overlay">
     <div class="modal-content">
         <h3>Enter Previous Echo date and summary</h3>
-        <input type="text" id="previousEchoInput" placeholder="Enter previous echo information..." autocomplete="off">
+        <textarea id="previousEchoInput" placeholder="Enter previous echo date and summary..." autocomplete="off" rows="5"></textarea>
         <div class="modal-buttons">
             <button class="modal-btn cancel" id="previousEchoCancel">Cancel</button>
             <button class="modal-btn" id="previousEchoConfirm">Confirm</button>
