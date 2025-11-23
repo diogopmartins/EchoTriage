@@ -654,14 +654,20 @@
                     // Handle confirm
                     const handleConfirm = () => {
                         const echoText = input.value.trim();
-                        if (echoText) {
-                            // Replace "PREVIOUS ECHO." with "PREVIOUS ECHO: text"
-                            const modifiedText = textContent.replace('PREVIOUS ECHO.', `PREVIOUS ECHO: ${echoText}`);
-                            copyToClipboard(modifiedText, event);
-                        } else {
-                            // If no text entered, just copy original
-                            copyToClipboard(textContent, event);
+                        if (echoText.length < 8) {
+                            // Show error message - need at least 8 characters
+                            input.style.borderColor = '#FF6B6B';
+                            input.placeholder = 'Please enter at least 8 characters...';
+                            input.value = '';
+                            setTimeout(() => {
+                                input.style.borderColor = '#FFD67A';
+                                input.placeholder = 'Enter previous echo date and summary...';
+                            }, 2000);
+                            return;
                         }
+                        // Replace "PREVIOUS ECHO." with "PREVIOUS ECHO: text"
+                        const modifiedText = textContent.replace('PREVIOUS ECHO.', `PREVIOUS ECHO: ${echoText}`);
+                        copyToClipboard(modifiedText, event);
                         modal.classList.remove('show');
                         confirmBtn.removeEventListener('click', handleConfirm);
                         cancelBtn.removeEventListener('click', handleCancel);
