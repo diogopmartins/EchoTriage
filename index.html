@@ -635,8 +635,11 @@
                         input.removeEventListener('keydown', handleKeyDown);
                     };
                     
-                    // Handle cancel
+                    // Handle cancel - remove PREVIOUS ECHO. and copy the rest
                     const handleCancel = () => {
+                        // Remove "PREVIOUS ECHO." and copy the rest of the sentence
+                        const modifiedText = textContent.replace(/\s*PREVIOUS ECHO\.\s*/gi, ' ').replace(/\s+/g, ' ').trim();
+                        copyToClipboard(modifiedText, event);
                         modal.classList.remove('show');
                         confirmBtn.removeEventListener('click', handleConfirm);
                         cancelBtn.removeEventListener('click', handleCancel);
