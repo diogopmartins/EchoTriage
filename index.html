@@ -131,6 +131,7 @@
             align-items: center;
             gap: 10px;
             margin-top: 8px;
+            min-height: auto;
         }
 
         .author-text {
@@ -147,6 +148,10 @@
             gap: 8px;
             font-size: 0.75rem;
             color: #FFD67A;
+        }
+
+        .toggle-container.hidden {
+            display: none;
         }
 
         .toggle-switch {
@@ -685,11 +690,21 @@
 
             // Mode toggle event handler
             const modeToggle = document.getElementById('modeToggle');
+            const expectedToggleContainer = document.querySelector('.toggle-container');
             modeToggle.addEventListener('change', async (e) => {
                 currentMode = e.target.checked ? 'OP' : 'IP';
                 
                 // Update page title
                 document.title = `NGH ${currentMode} Triage`;
+                
+                // Show/hide expected date toggle based on mode
+                if (currentMode === 'OP') {
+                    expectedToggleContainer.classList.add('hidden');
+                    includeExpectedDate = false;
+                    includeExpectedToggle.checked = false;
+                } else {
+                    expectedToggleContainer.classList.remove('hidden');
+                }
                 
                 // Reload sentences
                 await loadSentences(currentMode);
