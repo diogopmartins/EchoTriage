@@ -585,7 +585,14 @@
                         const title = document.createElement('h3');
                         title.textContent = line.slice(2);
                         subgroup.appendChild(title);
-                        leftColumn.insertBefore(subgroup, leftColumn.lastElementChild);
+                        // Insert after search container, or append if no search container
+                        if (searchContainer && searchContainer.nextSibling) {
+                            leftColumn.insertBefore(subgroup, searchContainer.nextSibling);
+                        } else if (searchContainer) {
+                            leftColumn.insertBefore(subgroup, searchContainer.nextSibling);
+                        } else {
+                            leftColumn.appendChild(subgroup);
+                        }
                         currentSubgroup = subgroup;
                     } else if (line.startsWith('-- ') && currentSubgroup) {
                         const sentence = document.createElement('div');
