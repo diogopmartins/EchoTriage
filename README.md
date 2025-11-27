@@ -106,7 +106,3 @@ This project is for internal use.
 
 Diogo Martins
 
----
-
-**Note**: This application is designed for use within the hospital network and follows data protection guidelines.
-
