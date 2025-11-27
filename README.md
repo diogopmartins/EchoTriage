@@ -1,6 +1,6 @@
 # Echo Triage
 
-A web application for Echo Triage system that helps medical staff quickly generate and copy standardized response sentences for inpatient (IP) and outpatient (OP) echo requests.
+A simple web application for quickly generating and copying standardized echo triage response sentences.
 
 ![Echo Triage Screenshot](./screenshot.png)
 
