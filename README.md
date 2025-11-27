@@ -71,18 +71,49 @@ When a sentence contains "PREVIOUS ECHO.":
 
 ## Customization
 
-### Adding New Sentences
+### Easy Sentence List Setup
 
-Edit the appropriate text file:
-- `sentences-ip.txt` for IP mode sentences
-- `sentences-op.txt` for OP mode sentences
+Setting up and customizing the sentence lists is incredibly simple - **no coding knowledge required!** Just edit plain text files using any text editor (Notepad, TextEdit, VS Code, etc.).
 
-Format:
+### Adding or Editing Sentences
+
+1. **Open the appropriate text file:**
+   - `sentences-ip.txt` for IP mode sentences
+   - `sentences-op.txt` for OP mode sentences
+
+2. **Use this simple format:**
+   ```
+   - SUBGROUP NAME
+   -- Sentence text here
+   -- Another sentence in the same subgroup
+   -- Yet another sentence
+   
+   - ANOTHER SUBGROUP
+   -- More sentences here
+   ```
+
+3. **Save the file** - that's it! The changes will appear immediately when you refresh the application.
+
+**Format Rules:**
+- Use `- ` (dash + space) to create a new subgroup/category
+- Use `-- ` (double dash + space) to add sentences under a subgroup
+- Empty lines are ignored
+- No special characters or formatting needed - just plain text!
+
+**Example:**
 ```
-- SUBGROUP NAME
--- Sentence text here
--- Another sentence in the same subgroup
+- RED PATHWAY
+-- RED PATHWAY - IP ECHO request has been received and triaged. Request has been triaged as red and we will aim to perform within 24 hrs (working days only).
+-- RED PATHWAY - IP ECHO request has been received and triaged. Request has been triaged as red and we will aim to perform within 24 hrs (working days only). Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
+
+- AMBER PATHWAY
+-- AMBER PATHWAY - IP ECHO request has been received and triaged. Request has been triaged as amber and we will aim to perform within 72 hrs / 3 working days.
 ```
+
+**Tips:**
+- Sentences are automatically color-coded based on keywords (RED PATHWAY, URGENT, NOT INDICATED, etc.)
+- Add "PREVIOUS ECHO." anywhere in a sentence to enable the previous echo modal feature
+- Changes take effect immediately - just refresh your browser
 
 ### Updating PDFs
 
