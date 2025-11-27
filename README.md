@@ -135,5 +135,5 @@ This project is for internal use.
 
 ## Author
 
-Diogo Martins
+[Diogo Martins](https://github.com/diogopmartins)
 
