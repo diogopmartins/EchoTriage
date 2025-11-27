@@ -131,7 +131,9 @@ Replace the PDF files:
 
 ## License
 
-This project is for internal use.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+You are free to use, copy, modify, and distribute this software, but **attribution to the original author (Diogo Martins) is required**.
 
 ## Author
 
