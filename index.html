@@ -616,7 +616,7 @@
         let allSentences = [];
         let currentSearchTerm = '';
         let includeExpectedDate = false;
-        let includePreviousEcho = false;
+        let includePreviousEcho = true;
         let previousEchoText = '';
         let currentMode = 'IP'; // 'IP' or 'OP'
 
@@ -1035,6 +1035,7 @@
             pdfToggle.addEventListener('change', togglePDF);
 
             const includePreviousEchoToggle = document.getElementById('includePreviousEchoToggle');
+            includePreviousEchoToggle.checked = true; // Set to checked by default
             includePreviousEchoToggle.addEventListener('change', (e) => {
                 includePreviousEcho = e.target.checked;
                 if (!e.target.checked) {
@@ -1190,7 +1191,7 @@
         <div class="author-container">
             <div class="toggle-container">
                 <label class="toggle-switch">
-                    <input type="checkbox" id="includePreviousEchoToggle">
+                    <input type="checkbox" id="includePreviousEchoToggle" checked>
                     <span class="toggle-slider"></span>
                 </label>
                 <span class="toggle-label">Add previous echo</span>
