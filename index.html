@@ -218,10 +218,11 @@
         .toggle-slider:before {
             position: absolute;
             content: "";
-            height: 10px;
-            width: 10px;
-            left: 3px;
-            bottom: 3px;
+            height: 12px;
+            width: 12px;
+            left: 2px;
+            top: 50%;
+            transform: translateY(-50%);
             background-color: #FFD67A;
             transition: 0.3s;
             border-radius: 50%;
@@ -232,7 +233,7 @@
         }
 
         .toggle-switch input:checked + .toggle-slider:before {
-            transform: translateX(16px);
+            transform: translateY(-50%) translateX(16px);
             background-color: #1C1C1C;
         }
 
