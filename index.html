@@ -300,6 +300,19 @@
             letter-spacing: 1px;
         }
 
+        .modal-sentence {
+            background-color: #1C1C1C;
+            border: 1px solid #FFD67A;
+            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 15px;
+            color: #FFFFFF;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
         .modal-content input,
         .modal-content textarea {
             width: 100%;
@@ -700,9 +713,13 @@
                 if (includePreviousEcho) {
                     // Show popup to get previous echo text
                     const modal = document.getElementById('previousEchoModal');
+                    const modalSentence = document.getElementById('modalSentence');
                     const input = document.getElementById('previousEchoInput');
                     const confirmBtn = document.getElementById('previousEchoConfirm');
                     const cancelBtn = document.getElementById('previousEchoCancel');
+                    
+                    // Display the selected sentence
+                    modalSentence.textContent = textContent;
                     
                     // Pre-fill with existing previous echo text if any
                     input.value = previousEchoText;
@@ -1213,6 +1230,7 @@
 <!-- Modal for Previous Echo input -->
 <div id="previousEchoModal" class="modal-overlay">
     <div class="modal-content">
+        <div id="modalSentence" class="modal-sentence"></div>
         <h3>Enter Previous Echo date and summary</h3>
         <textarea id="previousEchoInput" placeholder="Enter previous echo date and summary..." autocomplete="off" rows="5"></textarea>
         <div class="modal-buttons">
