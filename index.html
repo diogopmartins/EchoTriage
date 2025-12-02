@@ -314,6 +314,26 @@
             transform: scale(1.02);
         }
 
+        .modal-sentence.sentence-red {
+            background-color: red;
+        }
+
+        .modal-sentence.sentence-purple {
+            background-color: purple;
+        }
+
+        .modal-sentence.sentence-amber {
+            background-color: #FFA500;
+        }
+
+        .modal-sentence.sentence-green {
+            background-color: green;
+        }
+
+        .modal-sentence.sentence-blue {
+            background-color: #0066CC;
+        }
+
         .modal-content input,
         .modal-content textarea {
             width: 100%;
@@ -718,6 +738,20 @@
                     const input = document.getElementById('previousEchoInput');
                     const confirmBtn = document.getElementById('previousEchoConfirm');
                     const cancelBtn = document.getElementById('previousEchoCancel');
+                    
+                    // Get the clicked sentence element to copy its classes
+                    const clickedSentence = event.target;
+                    
+                    // Remove any existing sentence classes from modal sentence
+                    modalSentence.classList.remove('sentence', 'sentence-red', 'sentence-purple', 'sentence-amber', 'sentence-green', 'sentence-blue');
+                    
+                    // Copy sentence classes to modal sentence for proper styling
+                    clickedSentence.classList.forEach(cls => {
+                        if (cls.startsWith('sentence')) {
+                            modalSentence.classList.add(cls);
+                        }
+                    });
+                    modalSentence.classList.add('sentence'); // Ensure base sentence class is present
                     
                     // Display the selected sentence
                     modalSentence.textContent = textContent;
