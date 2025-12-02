@@ -1049,7 +1049,7 @@
 
             // Mode toggle event handler
             const modeToggle = document.getElementById('modeToggle');
-            const expectedToggleContainer = document.querySelector('.toggle-container');
+            const expectedToggleContainer = includeExpectedToggle.closest('.toggle-container');
             const pdfToggleContainer = document.querySelector('.pdf-toggle-container');
             modeToggle.addEventListener('change', async (e) => {
                 currentMode = e.target.checked ? 'OP' : 'IP';
