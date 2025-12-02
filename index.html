@@ -616,6 +616,8 @@
         let allSentences = [];
         let currentSearchTerm = '';
         let includeExpectedDate = false;
+        let includePreviousEcho = false;
+        let previousEchoText = '';
         let currentMode = 'IP'; // 'IP' or 'OP'
 
         function escapeRegex(string) {
@@ -645,8 +647,18 @@
                 expected = ` Expected scan until ${getDayName(expectedDate)}, ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`;
             }
 
+            // Add previous echo text before timestamp if enabled
+            let previousEcho = '';
+            if (includePreviousEcho) {
+                if (previousEchoText && previousEchoText.trim().length > 0) {
+                    previousEcho = ` PREVIOUS ECHO: ${previousEchoText.trim()}`;
+                } else {
+                    previousEcho = ' No previous echo.';
+                }
+            }
+
             const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
-            const textToCopy = `${textContent} ${timestamp}`;
+            const textToCopy = `${textContent}${previousEcho} ${timestamp}`;
             
             // Copy to clipboard with error handling
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -683,15 +695,16 @@
 
         function createSentenceClickHandler(textContent) {
             return function(event) {
-                // Check if sentence contains "PREVIOUS ECHO."
-                if (textContent.includes('PREVIOUS ECHO.')) {
+                // Check if previous echo toggle is enabled
+                if (includePreviousEcho) {
                     // Show popup to get previous echo text
                     const modal = document.getElementById('previousEchoModal');
                     const input = document.getElementById('previousEchoInput');
                     const confirmBtn = document.getElementById('previousEchoConfirm');
                     const cancelBtn = document.getElementById('previousEchoCancel');
                     
-                    input.value = '';
+                    // Pre-fill with existing previous echo text if any
+                    input.value = previousEchoText;
                     modal.classList.add('show');
                     input.focus();
                     
@@ -709,20 +722,18 @@
                             }, 2000);
                             return;
                         }
-                        // Replace "PREVIOUS ECHO." with "PREVIOUS ECHO: text"
-                        const modifiedText = textContent.replace('PREVIOUS ECHO.', `PREVIOUS ECHO: ${echoText}`);
-                        copyToClipboard(modifiedText, event);
+                        previousEchoText = echoText; // Store the text
+                        copyToClipboard(textContent, event);
                         modal.classList.remove('show');
                         confirmBtn.removeEventListener('click', handleConfirm);
                         cancelBtn.removeEventListener('click', handleCancel);
                         input.removeEventListener('keydown', handleKeyDown);
                     };
                     
-                    // Handle cancel - remove PREVIOUS ECHO. and copy the rest
+                    // Handle cancel - set empty and copy
                     const handleCancel = () => {
-                        // Remove "PREVIOUS ECHO." and copy the rest of the sentence
-                        const modifiedText = textContent.replace(/\s*PREVIOUS ECHO\.\s*/gi, ' ').replace(/\s+/g, ' ').trim();
-                        copyToClipboard(modifiedText, event);
+                        previousEchoText = ''; // Clear previous echo text
+                        copyToClipboard(textContent, event);
                         modal.classList.remove('show');
                         confirmBtn.removeEventListener('click', handleConfirm);
                         cancelBtn.removeEventListener('click', handleCancel);
@@ -731,7 +742,8 @@
                     
                     // Handle Enter key
                     const handleKeyDown = (e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
                             handleConfirm();
                         } else if (e.key === 'Escape') {
                             handleCancel();
@@ -1022,6 +1034,14 @@
             const pdfToggle = document.getElementById('pdfToggle');
             pdfToggle.addEventListener('change', togglePDF);
 
+            const includePreviousEchoToggle = document.getElementById('includePreviousEchoToggle');
+            includePreviousEchoToggle.addEventListener('change', (e) => {
+                includePreviousEcho = e.target.checked;
+                if (!e.target.checked) {
+                    previousEchoText = ''; // Clear when disabled
+                }
+            });
+
             const includeExpectedToggle = document.getElementById('includeExpectedToggle');
             includeExpectedToggle.addEventListener('change', (e) => {
                 includeExpectedDate = e.target.checked;
@@ -1168,6 +1188,13 @@
             <embed src="policy-ip.pdf" type="application/pdf">
         </div>
         <div class="author-container">
+            <div class="toggle-container">
+                <label class="toggle-switch">
+                    <input type="checkbox" id="includePreviousEchoToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+                <span class="toggle-label">Add previous echo</span>
+            </div>
             <div class="toggle-container">
                 <label class="toggle-switch">
                     <input type="checkbox" id="includeExpectedToggle">
