@@ -659,7 +659,7 @@
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
-        function copyToClipboard(textContent, event) {
+        function copyToClipboard(textContent, event, skipPreviousEcho = false) {
             const now = new Date();
             let hoursToAdd = 0;
 
@@ -682,9 +682,9 @@
                 expected = ` Expected scan until ${getDayName(expectedDate)}, ${formatDate(expectedDate)} @ ${formatTime(expectedDate)} **`;
             }
 
-            // Add previous echo text before timestamp if enabled
+            // Add previous echo text before timestamp if enabled and not skipped
             let previousEcho = '';
-            if (includePreviousEcho) {
+            if (includePreviousEcho && !skipPreviousEcho) {
                 if (previousEchoText && previousEchoText.trim().length > 0) {
                     previousEcho = ` PREVIOUS ECHO: ${previousEchoText.trim()}`;
                 } else {
@@ -738,6 +738,7 @@
                     const input = document.getElementById('previousEchoInput');
                     const confirmBtn = document.getElementById('previousEchoConfirm');
                     const cancelBtn = document.getElementById('previousEchoCancel');
+                    const skipBtn = document.getElementById('previousEchoSkip');
                     
                     // Get the clicked sentence element to copy its classes
                     const clickedSentence = event.target;
@@ -780,6 +781,7 @@
                         modal.classList.remove('show');
                         confirmBtn.removeEventListener('click', handleConfirm);
                         cancelBtn.removeEventListener('click', handleCancel);
+                        skipBtn.removeEventListener('click', handleSkip);
                         input.removeEventListener('keydown', handleKeyDown);
                     };
                     
@@ -790,6 +792,17 @@
                         modal.classList.remove('show');
                         confirmBtn.removeEventListener('click', handleConfirm);
                         cancelBtn.removeEventListener('click', handleCancel);
+                        skipBtn.removeEventListener('click', handleSkip);
+                        input.removeEventListener('keydown', handleKeyDown);
+                    };
+                    
+                    // Handle skip - copy without any previous echo information
+                    const handleSkip = () => {
+                        copyToClipboard(textContent, event, true); // Skip previous echo
+                        modal.classList.remove('show');
+                        confirmBtn.removeEventListener('click', handleConfirm);
+                        cancelBtn.removeEventListener('click', handleCancel);
+                        skipBtn.removeEventListener('click', handleSkip);
                         input.removeEventListener('keydown', handleKeyDown);
                     };
                     
@@ -799,12 +812,13 @@
                             e.preventDefault();
                             handleConfirm();
                         } else if (e.key === 'Escape') {
-                            handleCancel();
+                            handleSkip(); // Escape now skips instead of canceling
                         }
                     };
                     
                     confirmBtn.addEventListener('click', handleConfirm);
                     cancelBtn.addEventListener('click', handleCancel);
+                    skipBtn.addEventListener('click', handleSkip);
                     input.addEventListener('keydown', handleKeyDown);
                 } else {
                     // Normal copy without popup
@@ -1269,6 +1283,7 @@
         <h3>If available, enter previous echo details:</h3>
         <textarea id="previousEchoInput" placeholder="Enter previous echo date and summary..." autocomplete="off" rows="5"></textarea>
         <div class="modal-buttons">
+            <button class="modal-btn cancel" id="previousEchoSkip">Skip this step</button>
             <button class="modal-btn cancel" id="previousEchoCancel">No previous echo</button>
             <button class="modal-btn" id="previousEchoConfirm">Add previous echo information</button>
         </div>
