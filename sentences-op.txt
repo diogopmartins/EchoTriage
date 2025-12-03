@@ -1,18 +1,13 @@
 - HIGH PRIORITY
 -- HIGH PRIORITY - OP Echo request has been received and triaged as high Priority.
--- HIGH PRIORITY - OP Echo request has been received and triaged as high Priority. PREVIOUS ECHO.
 
 - URGENT
 -- URGENT PATHWAY - Request has been triaged as URGENT and will be performed within 2 weeks. 
 -- URGENT PATHWAY - Request has been triaged as URGENT and will be performed within 2 weeks. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
--- URGENT PATHWAY - Request has been triaged as URGENT and will be performed within 2 weeks. PREVIOUS ECHO.
--- URGENT PATHWAY - Request has been triaged as URGENT and will be performed within 2 weeks. PREVIOUS ECHO. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
 
 - INDICATED
 -- INDICATED - Request has been triaged as INDICATED and we aim to perform within 6 weeks. 
 -- INDICATED - Request has been triaged as INDICATED and we aim to perform within 6 weeks. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
--- INDICATED - Request has been triaged as INDICATED and we aim to perform within 6 weeks. PREVIOUS ECHO.
--- INDICATED - Request has been triaged as INDICATED and we aim to perform within 6 weeks. PREVIOUS ECHO. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
 
 
 - NOT INDICATED
