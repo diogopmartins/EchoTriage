@@ -291,6 +291,32 @@
             max-width: 600px;
             width: 90%;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #FFD67A;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            background-color: rgba(255, 214, 122, 0.2);
+            color: #FFC04D;
         }
 
         .modal-content h3 {
@@ -739,6 +765,7 @@
                     const confirmBtn = document.getElementById('previousEchoConfirm');
                     const cancelBtn = document.getElementById('previousEchoCancel');
                     const skipBtn = document.getElementById('previousEchoSkip');
+                    const closeBtn = document.getElementById('previousEchoClose');
                     
                     // Get the clicked sentence element to copy its classes
                     const clickedSentence = event.target;
@@ -803,6 +830,17 @@
                         confirmBtn.removeEventListener('click', handleConfirm);
                         cancelBtn.removeEventListener('click', handleCancel);
                         skipBtn.removeEventListener('click', handleSkip);
+                        closeBtn.removeEventListener('click', handleClose);
+                        input.removeEventListener('keydown', handleKeyDown);
+                    };
+                    
+                    // Handle close - close modal without copying anything
+                    const handleClose = () => {
+                        modal.classList.remove('show');
+                        confirmBtn.removeEventListener('click', handleConfirm);
+                        cancelBtn.removeEventListener('click', handleCancel);
+                        skipBtn.removeEventListener('click', handleSkip);
+                        closeBtn.removeEventListener('click', handleClose);
                         input.removeEventListener('keydown', handleKeyDown);
                     };
                     
@@ -812,13 +850,14 @@
                             e.preventDefault();
                             handleConfirm();
                         } else if (e.key === 'Escape') {
-                            handleSkip(); // Escape now skips instead of canceling
+                            handleClose(); // Escape closes without copying
                         }
                     };
                     
                     confirmBtn.addEventListener('click', handleConfirm);
                     cancelBtn.addEventListener('click', handleCancel);
                     skipBtn.addEventListener('click', handleSkip);
+                    closeBtn.addEventListener('click', handleClose);
                     input.addEventListener('keydown', handleKeyDown);
                 } else {
                     // Normal copy without popup
@@ -1279,6 +1318,7 @@
 <!-- Modal for Previous Echo input -->
 <div id="previousEchoModal" class="modal-overlay">
     <div class="modal-content">
+        <button class="modal-close" id="previousEchoClose" aria-label="Close">×</button>
         <div id="modalSentence" class="modal-sentence"></div>
         <h3>If available, enter previous echo details:</h3>
         <textarea id="previousEchoInput" placeholder="Enter previous echo date and summary..." autocomplete="off" rows="5"></textarea>
