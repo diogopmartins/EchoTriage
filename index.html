@@ -421,7 +421,7 @@
             background-color: #3A3A3A;
         }
 
-        /* PDF selector styling */
+        /* PDF selector dropdown styling */
         .pdf-selector-container {
             display: flex;
             flex-direction: column;
@@ -452,8 +452,16 @@
             color: #FFFFFF;
             font-size: 0.9rem;
             cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FFD67A' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
             transition: border-color 0.3s ease;
-            font-family: Arial, sans-serif;
+        }
+
+        .pdf-selector:hover {
+            border-color: #FFC04D;
         }
 
         .pdf-selector:focus {
@@ -1057,14 +1065,14 @@
             });
         }
         
-        async function loadPDF(pdfFile) {
+        async function loadPDF(fileName) {
             const embedEl = document.querySelector('.pdf-container embed');
             const pdfContainer = document.querySelector('.pdf-container');
 
             try {
-                const response = await fetch(pdfFile, { method: 'HEAD' });
+                const response = await fetch(fileName, { method: 'HEAD' });
                 if (response.ok) {
-                    embedEl.setAttribute('src', pdfFile);
+                    embedEl.setAttribute('src', fileName);
                     embedEl.style.display = 'block';
                     // Remove any error message
                     const errorMsg = pdfContainer.querySelector('.pdf-error');
@@ -1076,7 +1084,7 @@
                     if (!errorMsg) {
                         errorMsg = document.createElement('div');
                         errorMsg.className = 'pdf-error';
-                        errorMsg.textContent = `${pdfFile} not found. Please add the file.`;
+                        errorMsg.textContent = `${fileName} not found. Please add the file.`;
                         pdfContainer.appendChild(errorMsg);
                     }
                 }
@@ -1087,9 +1095,30 @@
                 if (!errorMsg) {
                     errorMsg = document.createElement('div');
                     errorMsg.className = 'pdf-error';
-                    errorMsg.textContent = `${pdfFile} not found. Please add the file.`;
+                    errorMsg.textContent = `${fileName} not found. Please add the file.`;
                     pdfContainer.appendChild(errorMsg);
                 }
+            }
+        }
+
+        function updatePDFSelector() {
+            const pdfSelector = document.getElementById('pdfSelector');
+            const pdfSelectorContainer = document.querySelector('.pdf-selector-container');
+            
+            if (currentMode === 'IP') {
+                // IP mode: 3 documents
+                pdfSelector.innerHTML = `
+                    <option value="policy-ip.pdf">Dept Policy</option>
+                    <option value="bse-ip.pdf">BSE Guidelines</option>
+                    <option value="Inpatient-Echocardiography-Triage-Summary-Guide-FINAL-November-2025-1.pdf">Triage Summary Guide</option>
+                `;
+                pdfSelectorContainer.classList.remove('hidden');
+            } else {
+                // OP mode: 2 documents (or hide if only BSE)
+                pdfSelector.innerHTML = `
+                    <option value="bse-op.pdf">BSE Guidelines</option>
+                `;
+                pdfSelectorContainer.classList.add('hidden');
             }
         }
 
@@ -1120,8 +1149,6 @@
             const modeToggle = document.getElementById('modeToggle');
             const expectedToggleContainer = includeExpectedToggle.closest('.toggle-container');
             const pdfSelectorContainer = document.querySelector('.pdf-selector-container');
-            const pdfSelector = document.getElementById('pdfSelector');
-            
             modeToggle.addEventListener('change', async (e) => {
                 currentMode = e.target.checked ? 'OP' : 'IP';
                 
@@ -1139,21 +1166,30 @@
                     expectedToggleContainer.classList.remove('hidden');
                     // Show PDF selector in IP mode
                     pdfSelectorContainer.classList.remove('hidden');
+                    updatePDFSelector();
                 }
                 
                 // Reload sentences
                 await loadSentences(currentMode);
                 
                 // Load appropriate PDF for mode
+                const embedEl = document.querySelector('.pdf-container embed');
+                const pdfContainer = document.querySelector('.pdf-container');
+                
                 if (currentMode === 'OP') {
                     // OP mode: only BSE guidelines
-                    await loadPDF('bse-op.pdf');
+                    const bseFile = 'bse-op.pdf';
+                    await loadPDF(bseFile);
                 } else {
                     // IP mode: default to policy file
-                    pdfSelector.value = 'policy-ip.pdf';
-                    await loadPDF('policy-ip.pdf');
+                    const policyFile = 'policy-ip.pdf';
+                    pdfSelector.value = policyFile;
+                    await loadPDF(policyFile);
                 }
             });
+
+            // Initialize PDF selector for IP mode
+            updatePDFSelector();
 
             // Initialize search (only once)
             initializeSearch();
