@@ -421,83 +421,50 @@
             background-color: #3A3A3A;
         }
 
-        /* PDF toggle switch styling */
-        .pdf-toggle-container {
-            display: grid;
-            grid-template-columns: 130px 60px 130px;
+        /* PDF selector styling */
+        .pdf-selector-container {
+            display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-items: center;
-            gap: 5px;
+            gap: 8px;
             margin-bottom: 10px;
             width: 330px;
         }
 
-        .pdf-toggle-container.hidden {
+        .pdf-selector-container.hidden {
             display: none;
         }
 
-        .pdf-toggle-label {
+        .pdf-selector-label {
             font-size: 0.85rem;
             color: #FFD67A;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             text-align: center;
-            width: 130px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
-        .pdf-toggle-label:first-child {
-            text-align: right;
-            padding-right: 5px;
-        }
-
-        .pdf-toggle-label:last-child {
-            text-align: left;
-            padding-left: 5px;
-        }
-
-        .pdf-toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 32px;
-        }
-
-        .pdf-toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .pdf-toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+        .pdf-selector {
+            width: 100%;
+            padding: 10px 15px;
             background-color: #2A2A2A;
             border: 2px solid #FFD67A;
-            transition: 0.3s;
-            border-radius: 32px;
+            border-radius: 5px;
+            color: #FFFFFF;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+            font-family: Arial, sans-serif;
         }
 
-        .pdf-toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 24px;
-            width: 24px;
-            left: 2px;
-            bottom: 2px;
-            background-color: #FFD67A;
-            transition: 0.3s;
-            border-radius: 50%;
+        .pdf-selector:focus {
+            outline: none;
+            border-color: #FFC04D;
+            box-shadow: 0 0 8px rgba(255, 214, 122, 0.3);
         }
 
-        .pdf-toggle-switch input:checked + .pdf-toggle-slider:before {
-            transform: translateX(28px);
+        .pdf-selector option {
+            background-color: #2A2A2A;
+            color: #FFFFFF;
         }
 
         /* IP/OP Mode toggle styles */
@@ -1090,31 +1057,18 @@
             });
         }
         
-        async function togglePDF() {
+        async function loadPDF(pdfFile) {
             const embedEl = document.querySelector('.pdf-container embed');
-            const pdfToggle = document.getElementById('pdfToggle');
             const pdfContainer = document.querySelector('.pdf-container');
-            const currentSrc = embedEl.getAttribute('src');
-
-            const policyFile = currentMode === 'IP' ? 'policy-ip.pdf' : 'policy-op.pdf';
-            const bseFile = currentMode === 'IP' ? 'bse-ip.pdf' : 'bse-op.pdf';
-
-            const targetFile = currentSrc.includes('policy') ? bseFile : policyFile;
 
             try {
-                const response = await fetch(targetFile, { method: 'HEAD' });
+                const response = await fetch(pdfFile, { method: 'HEAD' });
                 if (response.ok) {
-                    embedEl.setAttribute('src', targetFile);
+                    embedEl.setAttribute('src', pdfFile);
                     embedEl.style.display = 'block';
                     // Remove any error message
                     const errorMsg = pdfContainer.querySelector('.pdf-error');
                     if (errorMsg) errorMsg.remove();
-                    
-                    if (currentSrc.includes('policy')) {
-                        pdfToggle.checked = true;
-                    } else {
-                        pdfToggle.checked = false;
-                    }
                 } else {
                     // File doesn't exist
                     embedEl.style.display = 'none';
@@ -1122,7 +1076,7 @@
                     if (!errorMsg) {
                         errorMsg = document.createElement('div');
                         errorMsg.className = 'pdf-error';
-                        errorMsg.textContent = `${targetFile} not found. Please add the file.`;
+                        errorMsg.textContent = `${pdfFile} not found. Please add the file.`;
                         pdfContainer.appendChild(errorMsg);
                     }
                 }
@@ -1133,7 +1087,7 @@
                 if (!errorMsg) {
                     errorMsg = document.createElement('div');
                     errorMsg.className = 'pdf-error';
-                    errorMsg.textContent = `${targetFile} not found. Please add the file.`;
+                    errorMsg.textContent = `${pdfFile} not found. Please add the file.`;
                     pdfContainer.appendChild(errorMsg);
                 }
             }
@@ -1143,8 +1097,10 @@
             // Set initial page title
             document.title = 'NGH IP Triage';
             
-            const pdfToggle = document.getElementById('pdfToggle');
-            pdfToggle.addEventListener('change', togglePDF);
+            const pdfSelector = document.getElementById('pdfSelector');
+            pdfSelector.addEventListener('change', (e) => {
+                loadPDF(e.target.value);
+            });
 
             const includePreviousEchoToggle = document.getElementById('includePreviousEchoToggle');
             includePreviousEchoToggle.checked = true; // Set to checked by default
@@ -1163,7 +1119,9 @@
             // Mode toggle event handler
             const modeToggle = document.getElementById('modeToggle');
             const expectedToggleContainer = includeExpectedToggle.closest('.toggle-container');
-            const pdfToggleContainer = document.querySelector('.pdf-toggle-container');
+            const pdfSelectorContainer = document.querySelector('.pdf-selector-container');
+            const pdfSelector = document.getElementById('pdfSelector');
+            
             modeToggle.addEventListener('change', async (e) => {
                 currentMode = e.target.checked ? 'OP' : 'IP';
                 
@@ -1175,83 +1133,25 @@
                     expectedToggleContainer.classList.add('hidden');
                     includeExpectedDate = false;
                     includeExpectedToggle.checked = false;
-                    // Hide PDF toggle in OP mode (only BSE guidelines available)
-                    pdfToggleContainer.classList.add('hidden');
+                    // Hide PDF selector in OP mode (only BSE guidelines available)
+                    pdfSelectorContainer.classList.add('hidden');
                 } else {
                     expectedToggleContainer.classList.remove('hidden');
-                    // Show PDF toggle in IP mode
-                    pdfToggleContainer.classList.remove('hidden');
+                    // Show PDF selector in IP mode
+                    pdfSelectorContainer.classList.remove('hidden');
                 }
                 
                 // Reload sentences
                 await loadSentences(currentMode);
                 
                 // Load appropriate PDF for mode
-                const embedEl = document.querySelector('.pdf-container embed');
-                const pdfToggle = document.getElementById('pdfToggle');
-                const pdfContainer = document.querySelector('.pdf-container');
-                
                 if (currentMode === 'OP') {
                     // OP mode: only BSE guidelines
-                    const bseFile = 'bse-op.pdf';
-                    try {
-                        const response = await fetch(bseFile, { method: 'HEAD' });
-                        if (response.ok) {
-                            embedEl.setAttribute('src', bseFile);
-                            embedEl.style.display = 'block';
-                            const errorMsg = pdfContainer.querySelector('.pdf-error');
-                            if (errorMsg) errorMsg.remove();
-                        } else {
-                            embedEl.style.display = 'none';
-                            let errorMsg = pdfContainer.querySelector('.pdf-error');
-                            if (!errorMsg) {
-                                errorMsg = document.createElement('div');
-                                errorMsg.className = 'pdf-error';
-                                errorMsg.textContent = `${bseFile} not found. Please add the file.`;
-                                pdfContainer.appendChild(errorMsg);
-                            }
-                        }
-                    } catch (error) {
-                        embedEl.style.display = 'none';
-                        let errorMsg = pdfContainer.querySelector('.pdf-error');
-                        if (!errorMsg) {
-                            errorMsg = document.createElement('div');
-                            errorMsg.className = 'pdf-error';
-                            errorMsg.textContent = `${bseFile} not found. Please add the file.`;
-                            pdfContainer.appendChild(errorMsg);
-                        }
-                    }
+                    await loadPDF('bse-op.pdf');
                 } else {
                     // IP mode: default to policy file
-                    const policyFile = 'policy-ip.pdf';
-                    try {
-                        const response = await fetch(policyFile, { method: 'HEAD' });
-                        if (response.ok) {
-                            embedEl.setAttribute('src', policyFile);
-                            embedEl.style.display = 'block';
-                            const errorMsg = pdfContainer.querySelector('.pdf-error');
-                            if (errorMsg) errorMsg.remove();
-                        } else {
-                            embedEl.style.display = 'none';
-                            let errorMsg = pdfContainer.querySelector('.pdf-error');
-                            if (!errorMsg) {
-                                errorMsg = document.createElement('div');
-                                errorMsg.className = 'pdf-error';
-                                errorMsg.textContent = `${policyFile} not found. Please add the file.`;
-                                pdfContainer.appendChild(errorMsg);
-                            }
-                        }
-                    } catch (error) {
-                        embedEl.style.display = 'none';
-                        let errorMsg = pdfContainer.querySelector('.pdf-error');
-                        if (!errorMsg) {
-                            errorMsg = document.createElement('div');
-                            errorMsg.className = 'pdf-error';
-                            errorMsg.textContent = `${policyFile} not found. Please add the file.`;
-                            pdfContainer.appendChild(errorMsg);
-                        }
-                    }
-                    pdfToggle.checked = false;
+                    pdfSelector.value = 'policy-ip.pdf';
+                    await loadPDF('policy-ip.pdf');
                 }
             });
 
@@ -1260,6 +1160,9 @@
             
             // Load initial sentences (IP mode)
             await loadSentences('IP');
+            
+            // Load initial PDF (IP mode - default to policy)
+            await loadPDF('policy-ip.pdf');
         };
 
         function showNotification(x, y) {
@@ -1289,13 +1192,13 @@
             </label>
             <div class="mode-toggle-label">OP Triage</div>
         </div>
-        <div class="pdf-toggle-container">
-            <div class="pdf-toggle-label">Dept Policy</div>
-            <label class="pdf-toggle-switch">
-                <input type="checkbox" id="pdfToggle">
-                <span class="pdf-toggle-slider"></span>
-            </label>
-            <div class="pdf-toggle-label">BSE Guidelines</div>
+        <div class="pdf-selector-container">
+            <div class="pdf-selector-label">Select Document</div>
+            <select id="pdfSelector" class="pdf-selector">
+                <option value="policy-ip.pdf">Dept Policy</option>
+                <option value="bse-ip.pdf">BSE Guidelines</option>
+                <option value="Inpatient-Echocardiography-Triage-Summary-Guide-FINAL-November-2025-1.pdf">Triage Summary Guide</option>
+            </select>
         </div>
         <div class="pdf-container">
             <embed src="policy-ip.pdf" type="application/pdf">
