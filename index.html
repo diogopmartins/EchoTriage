@@ -21,6 +21,8 @@
             flex-direction: row;
             height: 100vh;
             background: #1C1C1C;
+            position: relative;
+            z-index: 2;
         }
 
         .left-column, .right-column {
@@ -642,6 +644,74 @@
             border-radius: 3px;
             font-weight: bold;
         }
+
+        /* Snow effect styles */
+        .snow-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: #FFFFFF;
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            user-select: none;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        /* Snow accumulation on boxes */
+        .sentence {
+            position: relative;
+            overflow: visible;
+        }
+
+        .snow-accumulation {
+            position: absolute;
+            top: -5px;
+            left: 0;
+            right: 0;
+            height: 0;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border-radius: 5px 5px 0 0;
+            pointer-events: none;
+            transition: height 0.3s ease, opacity 0.5s ease;
+            opacity: 0;
+            z-index: 2;
+        }
+
+        .snow-accumulation.visible {
+            opacity: 1;
+        }
+
+        .snow-accumulation.falling {
+            animation: snowFall 0.8s ease-out forwards;
+        }
+
+        @keyframes snowFall {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+        }
     </style>
 
     <script>
@@ -676,6 +746,9 @@
         let includePreviousEcho = true;
         let previousEchoText = '';
         let currentMode = 'IP'; // 'IP' or 'OP'
+        let snowflakes = [];
+        let sentenceSnowAccumulation = new Map(); // Map to track snow accumulation per sentence
+        let snowAccumulationInterval = null;
 
         function escapeRegex(string) {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -750,8 +823,115 @@
             document.body.removeChild(textArea);
         }
 
+        // Snow effect functions
+        function createSnowflake() {
+            const snowflake = document.createElement('div');
+            snowflake.className = 'snowflake';
+            snowflake.innerHTML = '❄';
+            snowflake.style.left = Math.random() * 100 + '%';
+            snowflake.style.opacity = Math.random() * 0.5 + 0.5;
+            snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+            const duration = Math.random() * 3 + 2; // 2-5 seconds
+            snowflake.style.animationDuration = duration + 's';
+            snowflake.style.animationDelay = Math.random() * 2 + 's';
+            
+            const snowContainer = document.getElementById('snowContainer');
+            if (snowContainer) {
+                snowContainer.appendChild(snowflake);
+                snowflakes.push(snowflake);
+                
+                // Remove snowflake after animation
+                setTimeout(() => {
+                    if (snowflake.parentNode) {
+                        snowflake.parentNode.removeChild(snowflake);
+                    }
+                    const index = snowflakes.indexOf(snowflake);
+                    if (index > -1) {
+                        snowflakes.splice(index, 1);
+                    }
+                }, (duration + 2) * 1000);
+            }
+        }
+
+        function startSnowEffect() {
+            // Create snow container if it doesn't exist
+            let snowContainer = document.getElementById('snowContainer');
+            if (!snowContainer) {
+                snowContainer = document.createElement('div');
+                snowContainer.id = 'snowContainer';
+                snowContainer.className = 'snow-container';
+                document.body.appendChild(snowContainer);
+            }
+
+            // Create snowflakes periodically
+            setInterval(() => {
+                if (snowflakes.length < 50) { // Limit number of snowflakes
+                    createSnowflake();
+                }
+            }, 300);
+        }
+
+        function accumulateSnowOnBoxes() {
+            const sentences = document.querySelectorAll('.sentence:not(.hidden)');
+            sentences.forEach(sentence => {
+                // Skip if sentence is not visible
+                if (sentence.offsetParent === null) return;
+                
+                const sentenceId = sentence.getAttribute('data-sentence-id') || 
+                    (sentence.textContent + Math.random()).toString();
+                if (!sentence.getAttribute('data-sentence-id')) {
+                    sentence.setAttribute('data-sentence-id', sentenceId);
+                }
+
+                let currentHeight = sentenceSnowAccumulation.get(sentenceId) || 0;
+                
+                // Increase snow accumulation (max 15px)
+                if (currentHeight < 15) {
+                    currentHeight += 0.1;
+                    sentenceSnowAccumulation.set(sentenceId, currentHeight);
+                    
+                    // Get or create snow accumulation element
+                    let snowAccum = sentence.querySelector('.snow-accumulation');
+                    if (!snowAccum) {
+                        snowAccum = document.createElement('div');
+                        snowAccum.className = 'snow-accumulation';
+                        sentence.appendChild(snowAccum);
+                    }
+                    
+                    snowAccum.style.height = currentHeight + 'px';
+                    if (currentHeight > 0.5) {
+                        snowAccum.classList.add('visible');
+                    }
+                }
+            });
+        }
+
+        function removeSnowFromBox(sentenceElement) {
+            const sentenceId = sentenceElement.getAttribute('data-sentence-id');
+            if (!sentenceId) return;
+            
+            const snowAccum = sentenceElement.querySelector('.snow-accumulation');
+            if (snowAccum && sentenceSnowAccumulation.has(sentenceId)) {
+                // Animate snow falling off
+                snowAccum.classList.add('falling');
+                
+                // Reset after animation
+                setTimeout(() => {
+                    snowAccum.classList.remove('falling', 'visible');
+                    snowAccum.style.height = '0px';
+                    sentenceSnowAccumulation.set(sentenceId, 0);
+                }, 800);
+            }
+        }
+
         function createSentenceClickHandler(textContent) {
             return function(event) {
+                // Remove snow from clicked box
+                const clickedSentence = event.target.closest('.sentence');
+                if (clickedSentence) {
+                    removeSnowFromBox(clickedSentence);
+                }
+
                 // Check if previous echo toggle is enabled
                 if (includePreviousEcho) {
                     // Show popup to get previous echo text
@@ -929,8 +1109,9 @@
             const subgroups = leftColumn.querySelectorAll('.subgroup');
             subgroups.forEach(sub => sub.remove());
             
-            // Clear sentences array
+            // Clear sentences array and reset snow accumulation for new sentences
             allSentences = [];
+            sentenceSnowAccumulation.clear();
             
             const fileName = mode === 'IP' ? 'sentences-ip.txt' : 'sentences-op.txt';
             
@@ -1247,6 +1428,12 @@
             
             // Load initial PDF (IP mode - default to policy)
             await loadPDF('policy-ip.pdf');
+
+            // Start snow effect
+            startSnowEffect();
+
+            // Start snow accumulation on boxes (accumulate every 500ms)
+            snowAccumulationInterval = setInterval(accumulateSnowOnBoxes, 500);
         };
 
         function showNotification(x, y) {
