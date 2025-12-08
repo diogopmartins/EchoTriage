@@ -653,24 +653,25 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 1;
+            z-index: 0;
             overflow: hidden;
         }
 
         .snowflake {
             position: absolute;
             color: #FFFFFF;
-            font-size: 1em;
+            font-size: 20px;
             font-family: Arial, sans-serif;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 1);
             user-select: none;
             pointer-events: none;
             animation: fall linear infinite;
+            top: -50px;
         }
 
         @keyframes fall {
             to {
-                transform: translateY(100vh) rotate(360deg);
+                transform: translateY(calc(100vh + 50px)) rotate(360deg);
             }
         }
 
@@ -829,11 +830,12 @@
             snowflake.className = 'snowflake';
             snowflake.innerHTML = '❄';
             snowflake.style.left = Math.random() * 100 + '%';
-            snowflake.style.opacity = Math.random() * 0.5 + 0.5;
-            snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
-            const duration = Math.random() * 3 + 2; // 2-5 seconds
+            snowflake.style.opacity = Math.random() * 0.4 + 0.6; // More visible: 0.6-1.0
+            snowflake.style.fontSize = (Math.random() * 15 + 15) + 'px'; // Larger: 15-30px
+            snowflake.style.top = '-50px'; // Start above viewport
+            const duration = Math.random() * 4 + 3; // 3-7 seconds (slower fall)
             snowflake.style.animationDuration = duration + 's';
-            snowflake.style.animationDelay = Math.random() * 2 + 's';
+            snowflake.style.animationDelay = '0s';
             
             const snowContainer = document.getElementById('snowContainer');
             if (snowContainer) {
@@ -849,7 +851,7 @@
                     if (index > -1) {
                         snowflakes.splice(index, 1);
                     }
-                }, (duration + 2) * 1000);
+                }, (duration + 1) * 1000);
             }
         }
 
@@ -860,15 +862,20 @@
                 snowContainer = document.createElement('div');
                 snowContainer.id = 'snowContainer';
                 snowContainer.className = 'snow-container';
-                document.body.appendChild(snowContainer);
+                document.body.insertBefore(snowContainer, document.body.firstChild);
+            }
+
+            // Create initial batch of snowflakes
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => createSnowflake(), i * 100);
             }
 
             // Create snowflakes periodically
             setInterval(() => {
-                if (snowflakes.length < 50) { // Limit number of snowflakes
+                if (snowflakes.length < 80) { // More snowflakes
                     createSnowflake();
                 }
-            }, 300);
+            }, 200); // Create more frequently
         }
 
         function accumulateSnowOnBoxes() {
