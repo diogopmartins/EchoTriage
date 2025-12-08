@@ -780,8 +780,8 @@
                     // Display the selected sentence
                     modalSentence.textContent = textContent;
                     
-                    // Pre-fill with existing previous echo text if any
-                    input.value = previousEchoText;
+                    // Reset textarea to empty every time modal opens
+                    input.value = '';
                     modal.classList.add('show');
                     input.focus();
                     
