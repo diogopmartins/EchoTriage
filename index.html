@@ -92,24 +92,39 @@
             border-color: #FFD700;
         }
 
-        .sentence-red:hover {
-            background-color: red;
+        .sentence.sentence-red {
+            background-color: #2A2A2A !important;
+        }
+        .sentence.sentence-red:hover {
+            background-color: red !important;
         }
 
-        .sentence-purple:hover {
-            background-color: purple;
+        .sentence.sentence-purple {
+            background-color: #2A2A2A !important;
+        }
+        .sentence.sentence-purple:hover {
+            background-color: purple !important;
         }
 
-        .sentence-amber:hover {
-            background-color: #FFA500;
+        .sentence.sentence-amber {
+            background-color: #2A2A2A !important;
+        }
+        .sentence.sentence-amber:hover {
+            background-color: #FFA500 !important;
         }
 
-        .sentence-green:hover {
-            background-color: green;
+        .sentence.sentence-green {
+            background-color: #2A2A2A !important;
+        }
+        .sentence.sentence-green:hover {
+            background-color: green !important;
         }
 
+        .sentence.sentence-blue {
+            background-color: #2A2A2A !important;
+        }
         .sentence.sentence-blue:hover {
-            background-color: #0066CC;
+            background-color: #0066CC !important;
         }
 
         .pdf-container {
@@ -345,7 +360,7 @@
         }
 
         .modal-sentence {
-            background-color: #2A2A2A;
+            background-color: #2A2A2A !important;
             border: 2px solid #FFD700;
             border-radius: 5px;
             padding: 12px;
@@ -358,24 +373,50 @@
             transform: scale(1.02);
         }
 
-        .modal-sentence.sentence-red {
-            background-color: red;
+        /* Modal sentence color rules - must come after regular sentence rules and override them */
+        #modalSentence.sentence.sentence-red,
+        .modal-sentence.sentence.sentence-red {
+            background-color: #2A2A2A !important;
+        }
+        #modalSentence.sentence.sentence-red:hover,
+        .modal-sentence.sentence.sentence-red:hover {
+            background-color: red !important;
         }
 
-        .modal-sentence.sentence-purple {
-            background-color: purple;
+        #modalSentence.sentence.sentence-purple,
+        .modal-sentence.sentence.sentence-purple {
+            background-color: #2A2A2A !important;
+        }
+        #modalSentence.sentence.sentence-purple:hover,
+        .modal-sentence.sentence.sentence-purple:hover {
+            background-color: purple !important;
         }
 
-        .modal-sentence.sentence-amber {
-            background-color: #FFA500;
+        #modalSentence.sentence.sentence-amber,
+        .modal-sentence.sentence.sentence-amber {
+            background-color: #2A2A2A !important;
+        }
+        #modalSentence.sentence.sentence-amber:hover,
+        .modal-sentence.sentence.sentence-amber:hover {
+            background-color: #FFA500 !important;
         }
 
-        .modal-sentence.sentence-green {
-            background-color: green;
+        #modalSentence.sentence.sentence-green,
+        .modal-sentence.sentence.sentence-green {
+            background-color: #2A2A2A !important;
+        }
+        #modalSentence.sentence.sentence-green:hover,
+        .modal-sentence.sentence.sentence-green:hover {
+            background-color: green !important;
         }
 
-        .modal-sentence.sentence-blue {
-            background-color: #0066CC;
+        #modalSentence.sentence.sentence-blue,
+        .modal-sentence.sentence.sentence-blue {
+            background-color: #2A2A2A !important;
+        }
+        #modalSentence.sentence.sentence-blue:hover,
+        .modal-sentence.sentence.sentence-blue:hover {
+            background-color: #0066CC !important;
         }
 
         .modal-content input,
@@ -904,8 +945,14 @@
             const subgroups = document.querySelectorAll('.subgroup');
             subgroups.forEach(subgroup => {
                 const visibleSentences = subgroup.querySelectorAll('.sentence:not(.hidden)');
+                const title = subgroup.querySelector('h3')?.textContent;
                 if (visibleSentences.length === 0) {
                     subgroup.classList.add('hidden');
+                    // Debug: Log if GREEN PATHWAY is being hidden
+                    if (title === 'GREEN PATHWAY') {
+                        const totalSentences = subgroup.querySelectorAll('.sentence').length;
+                        console.warn(`⚠️ GREEN PATHWAY subgroup hidden: ${totalSentences} total sentences, ${visibleSentences.length} visible`);
+                    }
                 } else {
                     subgroup.classList.remove('hidden');
                 }
@@ -943,34 +990,45 @@
                 const text = await response.text();
                 const lines = text.split('\n');
                 let currentSubgroup = null;
+                let greenPathwayCount = 0;
 
-                lines.forEach(line => {
+                lines.forEach((line, lineIndex) => {
+                    const originalLine = line;
+                    // Trim whitespace from line
+                    line = line.trim();
+                    // Skip empty lines
+                    if (!line) return;
+                    
                     if (line.startsWith('- ')) {
                         const subgroup = document.createElement('div');
                         subgroup.classList.add('subgroup');
                         const title = document.createElement('h3');
-                        title.textContent = line.slice(2);
+                        const titleText = line.slice(2).trim();
+                        title.textContent = titleText;
                         subgroup.appendChild(title);
                         // Append subgroups in order (after search container if it exists)
-                        if (searchContainer) {
-                            // Insert after search container, or after last subgroup
-                            const existingSubgroups = leftColumn.querySelectorAll('.subgroup');
-                            if (existingSubgroups.length > 0) {
-                                // Insert after the last subgroup
-                                const lastSubgroup = existingSubgroups[existingSubgroups.length - 1];
-                                leftColumn.insertBefore(subgroup, lastSubgroup.nextSibling);
-                            } else {
-                                // First subgroup - insert after search container
-                                leftColumn.insertBefore(subgroup, searchContainer.nextSibling);
-                            }
+                        if (searchContainer && leftColumn.querySelectorAll('.subgroup').length === 0) {
+                            // First subgroup - insert after search container
+                            leftColumn.insertBefore(subgroup, searchContainer.nextSibling);
                         } else {
+                            // Append to end (maintains order)
                             leftColumn.appendChild(subgroup);
                         }
                         currentSubgroup = subgroup;
-                    } else if (line.startsWith('-- ') && currentSubgroup) {
+                        // Debug logging for GREEN PATHWAY subgroup
+                        if (titleText === 'GREEN PATHWAY') {
+                            console.log(`✓✓✓ GREEN PATHWAY subgroup created at line ${lineIndex + 1}: "${titleText}"`);
+                            console.log('  Subgroup element:', subgroup);
+                            console.log('  Parent:', subgroup.parentElement);
+                        }
+                    } else if (line.startsWith('-- ')) {
+                        if (!currentSubgroup) {
+                            console.error(`ERROR at line ${lineIndex + 1}: No currentSubgroup when processing sentence: "${line.substring(0, 50)}"`);
+                            return;
+                        }
                         const sentence = document.createElement('div');
                         sentence.classList.add('sentence');
-                        const textContent = line.slice(3);
+                        const textContent = line.slice(3).trim();
                         sentence.textContent = textContent;
                         sentence.setAttribute('data-original-text', textContent);
 
@@ -990,20 +1048,35 @@
                                 sentence.classList.add('sentence-green');
                             }
                         } else {
-                            // IP mode: RED PATHWAY, PURPLE PATHWAY, AMBER PATHWAY, REJECTED
-                            if (textContent.includes('RED PATHWAY')) {
-                                sentence.classList.add('sentence-red');
-                            } else if (textContent.includes('PURPLE PATHWAY')) {
+                            // IP mode: PURPLE PATHWAY, RED PATHWAY, AMBER PATHWAY, GREEN PATHWAY, REJECTED
+                            // IMPORTANT: Check GREEN PATHWAY before REJECTED since some GREEN sentences contain "rejected" text
+                            if (textContent.includes('PURPLE PATHWAY')) {
                                 sentence.classList.add('sentence-purple');
+                            } else if (textContent.includes('RED PATHWAY')) {
+                                sentence.classList.add('sentence-red');
                             } else if (textContent.includes('AMBER PATHWAY')) {
                                 sentence.classList.add('sentence-amber');
+                            } else if (textContent.includes('GREEN PATHWAY')) {
+                                sentence.classList.add('sentence-green');
+                            } else if (textContent.includes('REJECTED')) {
+                                sentence.classList.add('sentence-blue');
                             } else {
                                 sentence.classList.add('sentence-green');
                             }
                         }
 
                         sentence.onclick = createSentenceClickHandler(textContent);
+                        if (!currentSubgroup) {
+                            console.error('No currentSubgroup when trying to add sentence:', textContent.substring(0, 50));
+                            return; // Skip this sentence if no subgroup
+                        }
                         currentSubgroup.appendChild(sentence);
+                        
+                        // Debug logging for GREEN PATHWAY sentences
+                        if (textContent.includes('GREEN PATHWAY')) {
+                            greenPathwayCount++;
+                            console.log(`✓ GREEN PATHWAY sentence #${greenPathwayCount} added:`, textContent.substring(0, 60), '| Classes:', sentence.className, '| Subgroup:', currentSubgroup.querySelector('h3')?.textContent);
+                        }
                         
                         // Set pathway for search/filter
                         let pathwayType = 'green';
@@ -1014,9 +1087,10 @@
                                          textContent.includes('HIGH PRIORITY') ? 'purple' :
                                          textContent.includes('INDICATED') ? 'amber' : 'green';
                         } else {
-                            pathwayType = textContent.includes('RED PATHWAY') ? 'red' : 
+                            pathwayType = textContent.includes('PURPLE PATHWAY') ? 'purple' :
+                                         textContent.includes('RED PATHWAY') ? 'red' : 
                                          textContent.includes('AMBER PATHWAY') ? 'amber' :
-                                         textContent.includes('PURPLE PATHWAY') ? 'purple' :
+                                         textContent.includes('GREEN PATHWAY') ? 'green' :
                                          textContent.includes('REJECTED') ? 'rejected' : 'green';
                         }
                         
@@ -1027,6 +1101,21 @@
                         });
                     }
                 });
+                
+                // Log summary
+                if (mode === 'IP') {
+                    console.log(`=== LOADING SUMMARY ===`);
+                    console.log(`Loaded ${greenPathwayCount} GREEN PATHWAY sentences. Total sentences: ${allSentences.length}`);
+                    // Verify GREEN PATHWAY subgroup exists
+                    const greenSubgroup = Array.from(document.querySelectorAll('.subgroup h3')).find(h => h.textContent === 'GREEN PATHWAY');
+                    if (greenSubgroup) {
+                        const subgroup = greenSubgroup.closest('.subgroup');
+                        const sentencesInSubgroup = subgroup.querySelectorAll('.sentence').length;
+                        console.log(`GREEN PATHWAY subgroup found with ${sentencesInSubgroup} sentences`);
+                    } else {
+                        console.error('ERROR: GREEN PATHWAY subgroup NOT FOUND after loading!');
+                    }
+                }
                 
                 // Clear search and reset filter
                 const searchInput = document.getElementById('searchInput');
