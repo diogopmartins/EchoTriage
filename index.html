@@ -1028,8 +1028,13 @@
                         sentence.onclick = createSentenceClickHandler(textContent);
                         if (!currentSubgroup) {
                             console.error('No currentSubgroup when trying to add sentence:', textContent.substring(0, 50));
-                        } else {
-                            currentSubgroup.appendChild(sentence);
+                            return; // Skip this sentence if no subgroup
+                        }
+                        currentSubgroup.appendChild(sentence);
+                        
+                        // Debug logging for GREEN PATHWAY sentences
+                        if (textContent.includes('GREEN PATHWAY')) {
+                            console.log('GREEN PATHWAY sentence added:', textContent.substring(0, 60), '| Classes:', sentence.className);
                         }
                         
                         // Set pathway for search/filter
