@@ -963,6 +963,7 @@
                 const text = await response.text();
                 const lines = text.split('\n');
                 let currentSubgroup = null;
+                let greenPathwayCount = 0;
 
                 lines.forEach(line => {
                     // Trim whitespace from line
@@ -1034,7 +1035,8 @@
                         
                         // Debug logging for GREEN PATHWAY sentences
                         if (textContent.includes('GREEN PATHWAY')) {
-                            console.log('GREEN PATHWAY sentence added:', textContent.substring(0, 60), '| Classes:', sentence.className);
+                            greenPathwayCount++;
+                            console.log(`✓ GREEN PATHWAY sentence #${greenPathwayCount} added:`, textContent.substring(0, 60), '| Classes:', sentence.className, '| Subgroup:', currentSubgroup.querySelector('h3')?.textContent);
                         }
                         
                         // Set pathway for search/filter
@@ -1060,6 +1062,11 @@
                         });
                     }
                 });
+                
+                // Log summary
+                if (mode === 'IP') {
+                    console.log(`Loaded ${greenPathwayCount} GREEN PATHWAY sentences. Total sentences: ${allSentences.length}`);
+                }
                 
                 // Clear search and reset filter
                 const searchInput = document.getElementById('searchInput');
