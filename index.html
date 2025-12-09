@@ -360,7 +360,7 @@
         }
 
         .modal-sentence {
-            background-color: #2A2A2A;
+            background-color: #2A2A2A !important;
             border: 2px solid #FFD700;
             border-radius: 5px;
             padding: 12px;
@@ -373,37 +373,48 @@
             transform: scale(1.02);
         }
 
+        /* Modal sentence color rules - must come after regular sentence rules and override them */
+        #modalSentence.sentence.sentence-red,
         .modal-sentence.sentence.sentence-red {
             background-color: #2A2A2A !important;
         }
+        #modalSentence.sentence.sentence-red:hover,
         .modal-sentence.sentence.sentence-red:hover {
             background-color: red !important;
         }
 
+        #modalSentence.sentence.sentence-purple,
         .modal-sentence.sentence.sentence-purple {
             background-color: #2A2A2A !important;
         }
+        #modalSentence.sentence.sentence-purple:hover,
         .modal-sentence.sentence.sentence-purple:hover {
             background-color: purple !important;
         }
 
+        #modalSentence.sentence.sentence-amber,
         .modal-sentence.sentence.sentence-amber {
             background-color: #2A2A2A !important;
         }
+        #modalSentence.sentence.sentence-amber:hover,
         .modal-sentence.sentence.sentence-amber:hover {
             background-color: #FFA500 !important;
         }
 
+        #modalSentence.sentence.sentence-green,
         .modal-sentence.sentence.sentence-green {
             background-color: #2A2A2A !important;
         }
+        #modalSentence.sentence.sentence-green:hover,
         .modal-sentence.sentence.sentence-green:hover {
             background-color: green !important;
         }
 
+        #modalSentence.sentence.sentence-blue,
         .modal-sentence.sentence.sentence-blue {
             background-color: #2A2A2A !important;
         }
+        #modalSentence.sentence.sentence-blue:hover,
         .modal-sentence.sentence.sentence-blue:hover {
             background-color: #0066CC !important;
         }
