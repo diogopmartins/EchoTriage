@@ -965,6 +965,11 @@
                 let currentSubgroup = null;
 
                 lines.forEach(line => {
+                    // Trim whitespace from line
+                    line = line.trim();
+                    // Skip empty lines
+                    if (!line) return;
+                    
                     if (line.startsWith('- ')) {
                         const subgroup = document.createElement('div');
                         subgroup.classList.add('subgroup');
@@ -990,7 +995,7 @@
                     } else if (line.startsWith('-- ') && currentSubgroup) {
                         const sentence = document.createElement('div');
                         sentence.classList.add('sentence');
-                        const textContent = line.slice(3);
+                        const textContent = line.slice(3).trim();
                         sentence.textContent = textContent;
                         sentence.setAttribute('data-original-text', textContent);
 
