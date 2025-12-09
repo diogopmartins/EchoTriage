@@ -924,8 +924,14 @@
             const subgroups = document.querySelectorAll('.subgroup');
             subgroups.forEach(subgroup => {
                 const visibleSentences = subgroup.querySelectorAll('.sentence:not(.hidden)');
+                const title = subgroup.querySelector('h3')?.textContent;
                 if (visibleSentences.length === 0) {
                     subgroup.classList.add('hidden');
+                    // Debug: Log if GREEN PATHWAY is being hidden
+                    if (title === 'GREEN PATHWAY') {
+                        const totalSentences = subgroup.querySelectorAll('.sentence').length;
+                        console.warn(`⚠️ GREEN PATHWAY subgroup hidden: ${totalSentences} total sentences, ${visibleSentences.length} visible`);
+                    }
                 } else {
                     subgroup.classList.remove('hidden');
                 }
@@ -975,7 +981,8 @@
                         const subgroup = document.createElement('div');
                         subgroup.classList.add('subgroup');
                         const title = document.createElement('h3');
-                        title.textContent = line.slice(2).trim();
+                        const titleText = line.slice(2).trim();
+                        title.textContent = titleText;
                         subgroup.appendChild(title);
                         // Append subgroups in order (after search container if it exists)
                         if (searchContainer && leftColumn.querySelectorAll('.subgroup').length === 0) {
@@ -986,6 +993,10 @@
                             leftColumn.appendChild(subgroup);
                         }
                         currentSubgroup = subgroup;
+                        // Debug logging for GREEN PATHWAY subgroup
+                        if (titleText === 'GREEN PATHWAY') {
+                            console.log('✓ GREEN PATHWAY subgroup created');
+                        }
                     } else if (line.startsWith('-- ') && currentSubgroup) {
                         const sentence = document.createElement('div');
                         sentence.classList.add('sentence');
@@ -1065,7 +1076,17 @@
                 
                 // Log summary
                 if (mode === 'IP') {
+                    console.log(`=== LOADING SUMMARY ===`);
                     console.log(`Loaded ${greenPathwayCount} GREEN PATHWAY sentences. Total sentences: ${allSentences.length}`);
+                    // Verify GREEN PATHWAY subgroup exists
+                    const greenSubgroup = Array.from(document.querySelectorAll('.subgroup h3')).find(h => h.textContent === 'GREEN PATHWAY');
+                    if (greenSubgroup) {
+                        const subgroup = greenSubgroup.closest('.subgroup');
+                        const sentencesInSubgroup = subgroup.querySelectorAll('.sentence').length;
+                        console.log(`GREEN PATHWAY subgroup found with ${sentencesInSubgroup} sentences`);
+                    } else {
+                        console.error('ERROR: GREEN PATHWAY subgroup NOT FOUND after loading!');
+                    }
                 }
                 
                 // Clear search and reset filter
