@@ -971,7 +971,8 @@
                 let currentSubgroup = null;
                 let greenPathwayCount = 0;
 
-                lines.forEach(line => {
+                lines.forEach((line, lineIndex) => {
+                    const originalLine = line;
                     // Trim whitespace from line
                     line = line.trim();
                     // Skip empty lines
@@ -995,9 +996,15 @@
                         currentSubgroup = subgroup;
                         // Debug logging for GREEN PATHWAY subgroup
                         if (titleText === 'GREEN PATHWAY') {
-                            console.log('✓ GREEN PATHWAY subgroup created');
+                            console.log(`✓✓✓ GREEN PATHWAY subgroup created at line ${lineIndex + 1}: "${titleText}"`);
+                            console.log('  Subgroup element:', subgroup);
+                            console.log('  Parent:', subgroup.parentElement);
                         }
-                    } else if (line.startsWith('-- ') && currentSubgroup) {
+                    } else if (line.startsWith('-- ')) {
+                        if (!currentSubgroup) {
+                            console.error(`ERROR at line ${lineIndex + 1}: No currentSubgroup when processing sentence: "${line.substring(0, 50)}"`);
+                            return;
+                        }
                         const sentence = document.createElement('div');
                         sentence.classList.add('sentence');
                         const textContent = line.slice(3).trim();
