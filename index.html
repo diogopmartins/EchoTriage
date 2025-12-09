@@ -373,8 +373,11 @@
             transform: scale(1.02);
         }
 
-        /* Modal sentence color rules - must come after regular sentence rules and override them */
-        /* Modal sentences should NEVER show colors, even on hover - always dark background */
+        /* Modal sentence color rules - CRITICAL: Must override ALL sentence color rules */
+        /* Modal sentences should NEVER show colors - always dark background, even on hover */
+        /* Using ID selector for maximum specificity to override .sentence.sentence-* rules */
+        #modalSentence,
+        #modalSentence.sentence,
         #modalSentence.sentence.sentence-red,
         #modalSentence.sentence.sentence-purple,
         #modalSentence.sentence.sentence-amber,
@@ -382,6 +385,8 @@
         #modalSentence.sentence.sentence-blue {
             background-color: #2A2A2A !important;
         }
+        #modalSentence:hover,
+        #modalSentence.sentence:hover,
         #modalSentence.sentence.sentence-red:hover,
         #modalSentence.sentence.sentence-purple:hover,
         #modalSentence.sentence.sentence-amber:hover,
@@ -391,6 +396,7 @@
         }
         
         /* Fallback for modal-sentence class (in case ID is not available) */
+        .modal-sentence.sentence,
         .modal-sentence.sentence.sentence-red,
         .modal-sentence.sentence.sentence-purple,
         .modal-sentence.sentence.sentence-amber,
@@ -398,6 +404,7 @@
         .modal-sentence.sentence.sentence-blue {
             background-color: #2A2A2A !important;
         }
+        .modal-sentence.sentence:hover,
         .modal-sentence.sentence.sentence-red:hover,
         .modal-sentence.sentence.sentence-purple:hover,
         .modal-sentence.sentence.sentence-amber:hover,
