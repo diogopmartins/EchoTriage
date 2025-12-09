@@ -990,17 +990,17 @@
                                 sentence.classList.add('sentence-green');
                             }
                         } else {
-                            // IP mode: RED PATHWAY, PURPLE PATHWAY, AMBER PATHWAY, REJECTED, GREEN PATHWAY
-                            if (textContent.includes('RED PATHWAY')) {
-                                sentence.classList.add('sentence-red');
-                            } else if (textContent.includes('PURPLE PATHWAY')) {
+                            // IP mode: PURPLE PATHWAY, RED PATHWAY, AMBER PATHWAY, GREEN PATHWAY, REJECTED
+                            if (textContent.includes('PURPLE PATHWAY')) {
                                 sentence.classList.add('sentence-purple');
+                            } else if (textContent.includes('RED PATHWAY')) {
+                                sentence.classList.add('sentence-red');
                             } else if (textContent.includes('AMBER PATHWAY')) {
                                 sentence.classList.add('sentence-amber');
-                            } else if (textContent.includes('REJECTED')) {
-                                sentence.classList.add('sentence-blue');
                             } else if (textContent.includes('GREEN PATHWAY')) {
                                 sentence.classList.add('sentence-green');
+                            } else if (textContent.includes('REJECTED')) {
+                                sentence.classList.add('sentence-blue');
                             } else {
                                 sentence.classList.add('sentence-green');
                             }
@@ -1018,9 +1018,10 @@
                                          textContent.includes('HIGH PRIORITY') ? 'purple' :
                                          textContent.includes('INDICATED') ? 'amber' : 'green';
                         } else {
-                            pathwayType = textContent.includes('RED PATHWAY') ? 'red' : 
+                            pathwayType = textContent.includes('PURPLE PATHWAY') ? 'purple' :
+                                         textContent.includes('RED PATHWAY') ? 'red' : 
                                          textContent.includes('AMBER PATHWAY') ? 'amber' :
-                                         textContent.includes('PURPLE PATHWAY') ? 'purple' :
+                                         textContent.includes('GREEN PATHWAY') ? 'green' :
                                          textContent.includes('REJECTED') ? 'rejected' : 'green';
                         }
                         
