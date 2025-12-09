@@ -374,40 +374,20 @@
         }
 
         /* Modal sentence color rules - must come after regular sentence rules and override them */
-        /* Use ID selector for maximum specificity to override .sentence.sentence-* rules */
-        #modalSentence.sentence.sentence-red {
-            background-color: #2A2A2A !important;
-        }
-        #modalSentence.sentence.sentence-red:hover {
-            background-color: red !important;
-        }
-
-        #modalSentence.sentence.sentence-purple {
-            background-color: #2A2A2A !important;
-        }
-        #modalSentence.sentence.sentence-purple:hover {
-            background-color: purple !important;
-        }
-
-        #modalSentence.sentence.sentence-amber {
-            background-color: #2A2A2A !important;
-        }
-        #modalSentence.sentence.sentence-amber:hover {
-            background-color: #FFA500 !important;
-        }
-
-        #modalSentence.sentence.sentence-green {
-            background-color: #2A2A2A !important;
-        }
-        #modalSentence.sentence.sentence-green:hover {
-            background-color: green !important;
-        }
-
+        /* Modal sentences should NEVER show colors, even on hover - always dark background */
+        #modalSentence.sentence.sentence-red,
+        #modalSentence.sentence.sentence-purple,
+        #modalSentence.sentence.sentence-amber,
+        #modalSentence.sentence.sentence-green,
         #modalSentence.sentence.sentence-blue {
             background-color: #2A2A2A !important;
         }
+        #modalSentence.sentence.sentence-red:hover,
+        #modalSentence.sentence.sentence-purple:hover,
+        #modalSentence.sentence.sentence-amber:hover,
+        #modalSentence.sentence.sentence-green:hover,
         #modalSentence.sentence.sentence-blue:hover {
-            background-color: #0066CC !important;
+            background-color: #2A2A2A !important;
         }
         
         /* Fallback for modal-sentence class (in case ID is not available) */
@@ -418,20 +398,12 @@
         .modal-sentence.sentence.sentence-blue {
             background-color: #2A2A2A !important;
         }
-        .modal-sentence.sentence.sentence-red:hover {
-            background-color: red !important;
-        }
-        .modal-sentence.sentence.sentence-purple:hover {
-            background-color: purple !important;
-        }
-        .modal-sentence.sentence.sentence-amber:hover {
-            background-color: #FFA500 !important;
-        }
-        .modal-sentence.sentence.sentence-green:hover {
-            background-color: green !important;
-        }
+        .modal-sentence.sentence.sentence-red:hover,
+        .modal-sentence.sentence.sentence-purple:hover,
+        .modal-sentence.sentence.sentence-amber:hover,
+        .modal-sentence.sentence.sentence-green:hover,
         .modal-sentence.sentence.sentence-blue:hover {
-            background-color: #0066CC !important;
+            background-color: #2A2A2A !important;
         }
 
         .modal-content input,
