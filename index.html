@@ -990,13 +990,17 @@
                                 sentence.classList.add('sentence-green');
                             }
                         } else {
-                            // IP mode: RED PATHWAY, PURPLE PATHWAY, AMBER PATHWAY, REJECTED
+                            // IP mode: RED PATHWAY, PURPLE PATHWAY, AMBER PATHWAY, REJECTED, GREEN PATHWAY
                             if (textContent.includes('RED PATHWAY')) {
                                 sentence.classList.add('sentence-red');
                             } else if (textContent.includes('PURPLE PATHWAY')) {
                                 sentence.classList.add('sentence-purple');
                             } else if (textContent.includes('AMBER PATHWAY')) {
                                 sentence.classList.add('sentence-amber');
+                            } else if (textContent.includes('REJECTED')) {
+                                sentence.classList.add('sentence-blue');
+                            } else if (textContent.includes('GREEN PATHWAY')) {
+                                sentence.classList.add('sentence-green');
                             } else {
                                 sentence.classList.add('sentence-green');
                             }
