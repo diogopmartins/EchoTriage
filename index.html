@@ -1009,15 +1009,15 @@
                             }
                         } else {
                             // IP mode: PURPLE PATHWAY, RED PATHWAY, AMBER PATHWAY, GREEN PATHWAY, REJECTED
-                            // Check GREEN PATHWAY before REJECTED to avoid conflicts
-                            if (textContent.includes('GREEN PATHWAY')) {
-                                sentence.classList.add('sentence-green');
-                            } else if (textContent.includes('PURPLE PATHWAY')) {
+                            // IMPORTANT: Check GREEN PATHWAY before REJECTED since some GREEN sentences contain "rejected" text
+                            if (textContent.includes('PURPLE PATHWAY')) {
                                 sentence.classList.add('sentence-purple');
                             } else if (textContent.includes('RED PATHWAY')) {
                                 sentence.classList.add('sentence-red');
                             } else if (textContent.includes('AMBER PATHWAY')) {
                                 sentence.classList.add('sentence-amber');
+                            } else if (textContent.includes('GREEN PATHWAY')) {
+                                sentence.classList.add('sentence-green');
                             } else if (textContent.includes('REJECTED')) {
                                 sentence.classList.add('sentence-blue');
                             } else {
@@ -1026,7 +1026,11 @@
                         }
 
                         sentence.onclick = createSentenceClickHandler(textContent);
-                        currentSubgroup.appendChild(sentence);
+                        if (!currentSubgroup) {
+                            console.error('No currentSubgroup when trying to add sentence:', textContent.substring(0, 50));
+                        } else {
+                            currentSubgroup.appendChild(sentence);
+                        }
                         
                         // Set pathway for search/filter
                         let pathwayType = 'green';
