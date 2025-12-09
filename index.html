@@ -812,6 +812,18 @@
                     });
                     modalSentence.classList.add('sentence'); // Ensure base sentence class is present
                     
+                    // CRITICAL: Force dark background via inline style to override ALL CSS rules
+                    // Modal should NEVER show colors, always dark background - set it and keep it
+                    modalSentence.style.setProperty('background-color', '#2A2A2A', 'important');
+                    
+                    // Also prevent any hover effects by removing pointer events or ensuring style stays
+                    // Add event listener to maintain dark background on hover
+                    const maintainDarkBackground = () => {
+                        modalSentence.style.setProperty('background-color', '#2A2A2A', 'important');
+                    };
+                    modalSentence.addEventListener('mouseenter', maintainDarkBackground);
+                    modalSentence.addEventListener('mouseleave', maintainDarkBackground);
+                    
                     // Display the selected sentence
                     modalSentence.textContent = textContent;
                     
