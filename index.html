@@ -816,7 +816,7 @@
                     // Modal should NEVER show colors, always dark background - set it and keep it
                     modalSentence.style.setProperty('background-color', '#2A2A2A', 'important');
                     
-                    // Also prevent any hover effects by removing pointer events or ensuring style stays
+                    // Also prevent any hover effects by ensuring style stays dark on hover
                     // Add event listener to maintain dark background on hover
                     const maintainDarkBackground = () => {
                         modalSentence.style.setProperty('background-color', '#2A2A2A', 'important');
@@ -831,6 +831,17 @@
                     input.value = '';
                     modal.classList.add('show');
                     input.focus();
+                    
+                    // Cleanup function to remove all event listeners
+                    const cleanup = () => {
+                        modalSentence.removeEventListener('mouseenter', maintainDarkBackground);
+                        modalSentence.removeEventListener('mouseleave', maintainDarkBackground);
+                        confirmBtn.removeEventListener('click', handleConfirm);
+                        cancelBtn.removeEventListener('click', handleCancel);
+                        skipBtn.removeEventListener('click', handleSkip);
+                        closeBtn.removeEventListener('click', handleClose);
+                        input.removeEventListener('keydown', handleKeyDown);
+                    };
                     
                     // Handle confirm
                     const handleConfirm = () => {
@@ -849,11 +860,7 @@
                         previousEchoText = echoText; // Store the text
                         copyToClipboard(textContent, event);
                         modal.classList.remove('show');
-                        confirmBtn.removeEventListener('click', handleConfirm);
-                        cancelBtn.removeEventListener('click', handleCancel);
-                        skipBtn.removeEventListener('click', handleSkip);
-                        closeBtn.removeEventListener('click', handleClose);
-                        input.removeEventListener('keydown', handleKeyDown);
+                        cleanup();
                     };
                     
                     // Handle cancel - set empty and copy
@@ -861,32 +868,20 @@
                         previousEchoText = ''; // Clear previous echo text
                         copyToClipboard(textContent, event);
                         modal.classList.remove('show');
-                        confirmBtn.removeEventListener('click', handleConfirm);
-                        cancelBtn.removeEventListener('click', handleCancel);
-                        skipBtn.removeEventListener('click', handleSkip);
-                        closeBtn.removeEventListener('click', handleClose);
-                        input.removeEventListener('keydown', handleKeyDown);
+                        cleanup();
                     };
                     
                     // Handle skip - copy without any previous echo information
                     const handleSkip = () => {
                         copyToClipboard(textContent, event, true); // Skip previous echo
                         modal.classList.remove('show');
-                        confirmBtn.removeEventListener('click', handleConfirm);
-                        cancelBtn.removeEventListener('click', handleCancel);
-                        skipBtn.removeEventListener('click', handleSkip);
-                        closeBtn.removeEventListener('click', handleClose);
-                        input.removeEventListener('keydown', handleKeyDown);
+                        cleanup();
                     };
                     
                     // Handle close - close modal without copying anything
                     const handleClose = () => {
                         modal.classList.remove('show');
-                        confirmBtn.removeEventListener('click', handleConfirm);
-                        cancelBtn.removeEventListener('click', handleCancel);
-                        skipBtn.removeEventListener('click', handleSkip);
-                        closeBtn.removeEventListener('click', handleClose);
-                        input.removeEventListener('keydown', handleKeyDown);
+                        cleanup();
                     };
                     
                     // Handle Enter key
