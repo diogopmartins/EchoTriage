@@ -371,48 +371,53 @@
             max-height: 150px;
             overflow-y: auto;
             transform: scale(1.02);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Modal sentence color rules - must come after regular sentence rules and override them */
-        #modalSentence.sentence.sentence-red,
-        .modal-sentence.sentence.sentence-red {
+        /* Modal sentence color rules - show pathway colors as solid background, no hover change */
+        /* Using ID selector for maximum specificity to override .sentence.sentence-* rules */
+        #modalSentence,
+        #modalSentence.sentence {
             background-color: #2A2A2A !important;
         }
+        
+        #modalSentence.sentence.sentence-red,
+        .modal-sentence.sentence.sentence-red {
+            background-color: red !important;
+        }
+        #modalSentence.sentence.sentence-purple,
+        .modal-sentence.sentence.sentence-purple {
+            background-color: purple !important;
+        }
+        #modalSentence.sentence.sentence-amber,
+        .modal-sentence.sentence.sentence-amber {
+            background-color: #FFA500 !important;
+        }
+        #modalSentence.sentence.sentence-green,
+        .modal-sentence.sentence.sentence-green {
+            background-color: green !important;
+        }
+        #modalSentence.sentence.sentence-blue,
+        .modal-sentence.sentence.sentence-blue {
+            background-color: #0066CC !important;
+        }
+        
+        /* Keep same color on hover - no change */
         #modalSentence.sentence.sentence-red:hover,
         .modal-sentence.sentence.sentence-red:hover {
             background-color: red !important;
-        }
-
-        #modalSentence.sentence.sentence-purple,
-        .modal-sentence.sentence.sentence-purple {
-            background-color: #2A2A2A !important;
         }
         #modalSentence.sentence.sentence-purple:hover,
         .modal-sentence.sentence.sentence-purple:hover {
             background-color: purple !important;
         }
-
-        #modalSentence.sentence.sentence-amber,
-        .modal-sentence.sentence.sentence-amber {
-            background-color: #2A2A2A !important;
-        }
         #modalSentence.sentence.sentence-amber:hover,
         .modal-sentence.sentence.sentence-amber:hover {
             background-color: #FFA500 !important;
         }
-
-        #modalSentence.sentence.sentence-green,
-        .modal-sentence.sentence.sentence-green {
-            background-color: #2A2A2A !important;
-        }
         #modalSentence.sentence.sentence-green:hover,
         .modal-sentence.sentence.sentence-green:hover {
             background-color: green !important;
-        }
-
-        #modalSentence.sentence.sentence-blue,
-        .modal-sentence.sentence.sentence-blue {
-            background-color: #2A2A2A !important;
         }
         #modalSentence.sentence.sentence-blue:hover,
         .modal-sentence.sentence.sentence-blue:hover {
@@ -826,6 +831,15 @@
                     modal.classList.add('show');
                     input.focus();
                     
+                    // Cleanup function to remove all event listeners
+                    const cleanup = () => {
+                        confirmBtn.removeEventListener('click', handleConfirm);
+                        cancelBtn.removeEventListener('click', handleCancel);
+                        skipBtn.removeEventListener('click', handleSkip);
+                        closeBtn.removeEventListener('click', handleClose);
+                        input.removeEventListener('keydown', handleKeyDown);
+                    };
+                    
                     // Handle confirm
                     const handleConfirm = () => {
                         const echoText = input.value.trim();
@@ -843,11 +857,7 @@
                         previousEchoText = echoText; // Store the text
                         copyToClipboard(textContent, event);
                         modal.classList.remove('show');
-                        confirmBtn.removeEventListener('click', handleConfirm);
-                        cancelBtn.removeEventListener('click', handleCancel);
-                        skipBtn.removeEventListener('click', handleSkip);
-                        closeBtn.removeEventListener('click', handleClose);
-                        input.removeEventListener('keydown', handleKeyDown);
+                        cleanup();
                     };
                     
                     // Handle cancel - set empty and copy
@@ -855,32 +865,20 @@
                         previousEchoText = ''; // Clear previous echo text
                         copyToClipboard(textContent, event);
                         modal.classList.remove('show');
-                        confirmBtn.removeEventListener('click', handleConfirm);
-                        cancelBtn.removeEventListener('click', handleCancel);
-                        skipBtn.removeEventListener('click', handleSkip);
-                        closeBtn.removeEventListener('click', handleClose);
-                        input.removeEventListener('keydown', handleKeyDown);
+                        cleanup();
                     };
                     
                     // Handle skip - copy without any previous echo information
                     const handleSkip = () => {
                         copyToClipboard(textContent, event, true); // Skip previous echo
                         modal.classList.remove('show');
-                        confirmBtn.removeEventListener('click', handleConfirm);
-                        cancelBtn.removeEventListener('click', handleCancel);
-                        skipBtn.removeEventListener('click', handleSkip);
-                        closeBtn.removeEventListener('click', handleClose);
-                        input.removeEventListener('keydown', handleKeyDown);
+                        cleanup();
                     };
                     
                     // Handle close - close modal without copying anything
                     const handleClose = () => {
                         modal.classList.remove('show');
-                        confirmBtn.removeEventListener('click', handleConfirm);
-                        cancelBtn.removeEventListener('click', handleCancel);
-                        skipBtn.removeEventListener('click', handleSkip);
-                        closeBtn.removeEventListener('click', handleClose);
-                        input.removeEventListener('keydown', handleKeyDown);
+                        cleanup();
                     };
                     
                     // Handle Enter key
