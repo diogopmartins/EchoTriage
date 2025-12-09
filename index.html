@@ -371,46 +371,57 @@
             max-height: 150px;
             overflow-y: auto;
             transform: scale(1.02);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Modal sentence color rules - CRITICAL: Must override ALL sentence color rules */
-        /* Modal sentences should NEVER show colors - always dark background, even on hover */
+        /* Modal sentence color rules - show pathway colors as solid background, no hover change */
         /* Using ID selector for maximum specificity to override .sentence.sentence-* rules */
         #modalSentence,
-        #modalSentence.sentence,
-        #modalSentence.sentence.sentence-red,
-        #modalSentence.sentence.sentence-purple,
-        #modalSentence.sentence.sentence-amber,
-        #modalSentence.sentence.sentence-green,
-        #modalSentence.sentence.sentence-blue {
-            background-color: #2A2A2A !important;
-        }
-        #modalSentence:hover,
-        #modalSentence.sentence:hover,
-        #modalSentence.sentence.sentence-red:hover,
-        #modalSentence.sentence.sentence-purple:hover,
-        #modalSentence.sentence.sentence-amber:hover,
-        #modalSentence.sentence.sentence-green:hover,
-        #modalSentence.sentence.sentence-blue:hover {
+        #modalSentence.sentence {
             background-color: #2A2A2A !important;
         }
         
-        /* Fallback for modal-sentence class (in case ID is not available) */
-        .modal-sentence.sentence,
-        .modal-sentence.sentence.sentence-red,
-        .modal-sentence.sentence.sentence-purple,
-        .modal-sentence.sentence.sentence-amber,
-        .modal-sentence.sentence.sentence-green,
-        .modal-sentence.sentence.sentence-blue {
-            background-color: #2A2A2A !important;
+        #modalSentence.sentence.sentence-red,
+        .modal-sentence.sentence.sentence-red {
+            background-color: red !important;
         }
-        .modal-sentence.sentence:hover,
-        .modal-sentence.sentence.sentence-red:hover,
-        .modal-sentence.sentence.sentence-purple:hover,
-        .modal-sentence.sentence.sentence-amber:hover,
-        .modal-sentence.sentence.sentence-green:hover,
+        #modalSentence.sentence.sentence-purple,
+        .modal-sentence.sentence.sentence-purple {
+            background-color: purple !important;
+        }
+        #modalSentence.sentence.sentence-amber,
+        .modal-sentence.sentence.sentence-amber {
+            background-color: #FFA500 !important;
+        }
+        #modalSentence.sentence.sentence-green,
+        .modal-sentence.sentence.sentence-green {
+            background-color: green !important;
+        }
+        #modalSentence.sentence.sentence-blue,
+        .modal-sentence.sentence.sentence-blue {
+            background-color: #0066CC !important;
+        }
+        
+        /* Keep same color on hover - no change */
+        #modalSentence.sentence.sentence-red:hover,
+        .modal-sentence.sentence.sentence-red:hover {
+            background-color: red !important;
+        }
+        #modalSentence.sentence.sentence-purple:hover,
+        .modal-sentence.sentence.sentence-purple:hover {
+            background-color: purple !important;
+        }
+        #modalSentence.sentence.sentence-amber:hover,
+        .modal-sentence.sentence.sentence-amber:hover {
+            background-color: #FFA500 !important;
+        }
+        #modalSentence.sentence.sentence-green:hover,
+        .modal-sentence.sentence.sentence-green:hover {
+            background-color: green !important;
+        }
+        #modalSentence.sentence.sentence-blue:hover,
         .modal-sentence.sentence.sentence-blue:hover {
-            background-color: #2A2A2A !important;
+            background-color: #0066CC !important;
         }
 
         .modal-content input,
@@ -812,18 +823,6 @@
                     });
                     modalSentence.classList.add('sentence'); // Ensure base sentence class is present
                     
-                    // CRITICAL: Force dark background via inline style to override ALL CSS rules
-                    // Modal should NEVER show colors, always dark background - set it and keep it
-                    modalSentence.style.setProperty('background-color', '#2A2A2A', 'important');
-                    
-                    // Also prevent any hover effects by ensuring style stays dark on hover
-                    // Add event listener to maintain dark background on hover
-                    const maintainDarkBackground = () => {
-                        modalSentence.style.setProperty('background-color', '#2A2A2A', 'important');
-                    };
-                    modalSentence.addEventListener('mouseenter', maintainDarkBackground);
-                    modalSentence.addEventListener('mouseleave', maintainDarkBackground);
-                    
                     // Display the selected sentence
                     modalSentence.textContent = textContent;
                     
@@ -834,8 +833,6 @@
                     
                     // Cleanup function to remove all event listeners
                     const cleanup = () => {
-                        modalSentence.removeEventListener('mouseenter', maintainDarkBackground);
-                        modalSentence.removeEventListener('mouseleave', maintainDarkBackground);
                         confirmBtn.removeEventListener('click', handleConfirm);
                         cancelBtn.removeEventListener('click', handleCancel);
                         skipBtn.removeEventListener('click', handleSkip);
