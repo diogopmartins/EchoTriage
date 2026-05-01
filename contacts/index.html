@@ -33,7 +33,7 @@
       color: var(--text);
       font-family: Arial, sans-serif;
       min-height: 100vh;
-      font-size: 14px;
+      font-size: 16px;
     }
 
     /* ── Top bar ── */
@@ -62,6 +62,7 @@
       font-family: Arial, sans-serif;
     }
 
+
     /* ── Layout ── */
     .layout { height: calc(100vh - 52px); }
 
@@ -84,7 +85,7 @@
       border: 2px solid var(--gold);
       color: var(--text);
       font-family: Arial, sans-serif;
-      font-size: 0.8rem;
+      font-size: 0.92rem;
       padding: 9px 12px;
       outline: none;
       transition: border-color 0.15s;
@@ -142,20 +143,20 @@
     .list-item.selected { background: var(--gold-dim); border-left: 2px solid var(--gold); }
 
     .list-item-name {
-      font-size: 0.83rem;
+      font-size: 0.98rem;
       font-weight: 500;
       color: var(--text);
       line-height: 1.3;
     }
 
     .list-item-sub {
-      font-size: 0.72rem;
+      font-size: 0.84rem;
       color: var(--text3);
       font-family: Arial, sans-serif;
     }
 
     .list-item-ext {
-      font-size: 0.72rem;
+      font-size: 0.82rem;
       color: var(--gold);
       font-family: Arial, sans-serif;
     }
@@ -199,7 +200,7 @@
     .cb-body { flex: 1; min-width: 0; }
 
     .cb-label {
-      font-size: 0.65rem;
+      font-size: 0.75rem;
       font-family: Arial, sans-serif;
       color: var(--text3);
       text-transform: uppercase;
@@ -209,7 +210,7 @@
 
     .cb-value {
       font-family: Arial, sans-serif;
-      font-size: 0.88rem;
+      font-size: 0.98rem;
       color: var(--text);
       word-break: break-all;
     }
@@ -256,7 +257,7 @@
     }
 
     .consultants-box-names {
-      font-size: 0.82rem;
+      font-size: 0.92rem;
       color: var(--text2);
       line-height: 1.6;
     }
@@ -268,7 +269,7 @@
       border: 1px solid var(--gold-border);
       color: var(--gold-light);
       font-family: Arial, sans-serif;
-      font-size: 0.78rem;
+      font-size: 0.9rem;
     }
 
     .staff-chip {
@@ -285,7 +286,7 @@
     .stats-bar {
       padding: 8px 14px;
       border-top: 1px solid var(--border2);
-      font-size: 0.68rem;
+      font-size: 0.8rem;
       font-family: Arial, sans-serif;
       color: var(--text3);
     }
@@ -331,6 +332,7 @@
       border-top: 1px solid var(--border2);
     }
 
+
     @media (max-width: 640px) {
       .left { width: 100%; max-width: 100%; border-right: none; }
       .layout { height: auto; }
@@ -341,10 +343,7 @@
 <body>
 
   <div class="topbar">
-    <div>
-      <div class="topbar-title">Directory</div>
-      <div class="topbar-sub">ECHOCARDIOGRAPHY</div>
-    </div>
+    <div></div>
   </div>
 
   <div class="layout">
@@ -515,6 +514,7 @@
         <button class="cb-copy" onclick="copyText('${email}','Email')">COPY</button>
       </div>`;
     }
+
   </script>
 </body>
 </html>

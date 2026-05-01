@@ -208,6 +208,30 @@
             fill: currentColor;
         }
 
+        .contacts-btn {
+            background-color: #2A2A2A;
+            border: 2px solid #FFD67A;
+            border-radius: 5px;
+            color: #FFD67A;
+            cursor: pointer;
+            font-size: 0.55rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            padding: 0 12px;
+            height: 22px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .contacts-btn:hover {
+            background-color: #FFD67A;
+            color: #1C1C1C;
+            border-color: #FFC04D;
+        }
+
         .toggle-container {
             display: flex;
             align-items: center;
@@ -481,6 +505,79 @@
 
         .modal-btn.cancel:hover {
             background-color: #3A3A3A;
+        }
+
+        .contacts-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2500;
+        }
+
+        .contacts-modal-overlay.show {
+            display: flex;
+        }
+
+        .contacts-modal-content {
+            background-color: #1C1C1C;
+            border: 2px solid #FFD67A;
+            border-radius: 6px;
+            width: 62%;
+            height: 88%;
+            max-width: 780px;
+            min-width: 640px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+        }
+
+        .contacts-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            border-bottom: 1px solid #3A3A3A;
+            background: #1C1C1C;
+        }
+
+        .contacts-modal-title {
+            color: #FFD67A;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .contacts-modal-close {
+            background-color: #2A2A2A;
+            border: 2px solid #FFD67A;
+            color: #FFD67A;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .contacts-modal-close:hover {
+            background-color: rgba(255, 214, 122, 0.3);
+            color: #FFC04D;
+            border-color: #FFC04D;
+        }
+
+        .contacts-modal-frame {
+            width: 100%;
+            height: calc(100% - 56px);
+            border: none;
+            background: #1C1C1C;
         }
 
         /* PDF selector button group styling */
@@ -1214,8 +1311,9 @@
                 pdfSelectorButtons.innerHTML = `
                     <button class="pdf-selector-btn active" data-pdf="policy-ip.pdf">Dept Policy</button>
                     <button class="pdf-selector-btn" data-pdf="bse-ip.pdf">BSE Guidelines</button>
-                    <button class="pdf-selector-btn" data-pdf="Inpatient-Echocardiography-Triage-Summary-Guide-FINAL-November-2025-1.pdf">GIRFT Document</button>
+                    <button class="pdf-selector-btn" data-pdf="Inpatient-Echocardiography-Triage-Summary-Guide-FINAL-November-2025-1.pdf">GIRFT</button>
                     <button class="pdf-selector-btn" data-pdf="GIRFT Poster.pdf">GIRFT Poster</button>
+                    <button class="pdf-selector-btn" data-pdf="NGH-Hospital-Map.pdf">NGH Map</button>
                 `;
                 pdfSelectorContainer.classList.remove('hidden');
                 
@@ -1310,6 +1408,25 @@
 
             // Initialize PDF selector for IP mode
             updatePDFSelector();
+
+            // Contacts modal handlers
+            const contactsBtn = document.getElementById('openContactsBtn');
+            const contactsModal = document.getElementById('contactsModal');
+            const contactsModalClose = document.getElementById('contactsModalClose');
+
+            contactsBtn.addEventListener('click', () => {
+                contactsModal.classList.add('show');
+            });
+
+            contactsModalClose.addEventListener('click', () => {
+                contactsModal.classList.remove('show');
+            });
+
+            contactsModal.addEventListener('click', (e) => {
+                if (e.target === contactsModal) {
+                    contactsModal.classList.remove('show');
+                }
+            });
             
             // Set up initial button listeners
             const pdfSelectorButtons = document.getElementById('pdfSelectorButtons');
@@ -1349,6 +1466,15 @@
         document.addEventListener('contextmenu', function(event) {
             event.preventDefault();
         });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const contactsModal = document.getElementById('contactsModal');
+                if (contactsModal.classList.contains('show')) {
+                    contactsModal.classList.remove('show');
+                }
+            }
+        });
     </script>
 </head>
 <body>
@@ -1367,8 +1493,9 @@
             <div class="pdf-selector-buttons" id="pdfSelectorButtons">
                 <button class="pdf-selector-btn active" data-pdf="policy-ip.pdf">Dept Policy</button>
                 <button class="pdf-selector-btn" data-pdf="bse-ip.pdf">BSE Guidelines</button>
-                <button class="pdf-selector-btn" data-pdf="Inpatient-Echocardiography-Triage-Summary-Guide-FINAL-November-2025-1.pdf">GIRFT Document</button>
+                <button class="pdf-selector-btn" data-pdf="Inpatient-Echocardiography-Triage-Summary-Guide-FINAL-November-2025-1.pdf">GIRFT</button>
                 <button class="pdf-selector-btn" data-pdf="Triage of Inpatient Echocardiogram.pdf">GIRFT Poster</button>
+                <button class="pdf-selector-btn" data-pdf="NGH-Hospital-Map.pdf">NGH Map</button>
             </div>
         </div>
         <div class="pdf-container">
@@ -1376,6 +1503,8 @@
         </div>
         <div class="author-container">
             <div class="toggles-row">
+                <button class="contacts-btn" id="openContactsBtn">Contacts List</button>
+                <div class="toggle-divider"></div>
                 <div class="toggle-container">
                     <label class="toggle-switch">
                         <input type="checkbox" id="includePreviousEchoToggle" checked>
@@ -1397,6 +1526,17 @@
     </div>
 </main>
 <div id="notification" class="notification">Copied to clipboard!</div>
+
+<!-- Contacts modal -->
+<div id="contactsModal" class="contacts-modal-overlay">
+    <div class="contacts-modal-content">
+        <div class="contacts-modal-header">
+            <div class="contacts-modal-title">Contacts Directory</div>
+            <button class="contacts-modal-close" id="contactsModalClose" aria-label="Close contacts list">×</button>
+        </div>
+        <iframe class="contacts-modal-frame" src="contacts/index.html" title="Contacts Directory"></iframe>
+    </div>
+</div>
 
 <!-- Modal for Previous Echo input -->
 <div id="previousEchoModal" class="modal-overlay">
