@@ -4,27 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NGH ECHO Directory</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #111111;
-      --surface: #1a1a1a;
-      --gold: #c8952a;
-      --gold-light: #e8b84b;
-      --gold-dim: rgba(200,149,42,0.15);
-      --gold-border: rgba(200,149,42,0.4);
-      --text: #e8e8e8;
-      --text2: #aaaaaa;
-      --text3: #666666;
-      --border: #2a2a2a;
-      --border2: #333333;
+      --bg: #1C1C1C;
+      --surface: #2A2A2A;
+      --gold: #FFD67A;
+      --gold-light: #FFC04D;
+      --gold-dim: rgba(255,214,122,0.12);
+      --gold-border: rgba(255,214,122,0.55);
+      --text: #FFFFFF;
+      --text2: #D5D5D5;
+      --text3: #9A9A9A;
+      --border: #333333;
+      --border2: #3A3A3A;
 
       --sec-color: #c8952a;
       --con-color: #5b9bd5;
       --nhc-color: #4caf7d;
       --ward-color: #9b72cf;
       --ci-color:  #e07b54;
-      --other-color: #888888;
+      --other-color: #9A9A9A;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,14 +31,14 @@
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Roboto', sans-serif;
+      font-family: Arial, sans-serif;
       min-height: 100vh;
       font-size: 14px;
     }
 
     /* ── Top bar ── */
     .topbar {
-      background: #0d0d0d;
+      background: var(--bg);
       border-bottom: 1px solid var(--gold-border);
       padding: 10px 20px;
       display: flex;
@@ -49,7 +48,7 @@
     }
 
     .topbar-title {
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-size: 0.85rem;
       font-weight: 600;
       color: var(--gold-light);
@@ -60,48 +59,13 @@
     .topbar-sub {
       font-size: 0.72rem;
       color: var(--text3);
-      font-family: 'Roboto Mono', monospace;
-    }
-
-    /* ── Tab bar ── */
-    .tabbar {
-      background: #0d0d0d;
-      border-bottom: 1px solid var(--border2);
-      display: flex;
-      gap: 0;
-      padding: 0 20px;
-      overflow-x: auto;
-    }
-
-    .tab {
-      padding: 9px 22px;
-      font-size: 0.78rem;
-      font-weight: 500;
-      font-family: 'Roboto Mono', monospace;
-      color: var(--text3);
-      cursor: pointer;
-      border: 1px solid transparent;
-      border-bottom: none;
-      background: transparent;
-      white-space: nowrap;
-      transition: color 0.15s, border-color 0.15s, background 0.15s;
-      position: relative;
-      top: 1px;
-      letter-spacing: 0.03em;
-    }
-
-    .tab:hover { color: var(--text2); }
-
-    .tab.active {
-      color: var(--gold-light);
-      border-color: var(--gold-border);
-      background: var(--surface);
+      font-family: Arial, sans-serif;
     }
 
     /* ── Layout ── */
     .layout {
       display: flex;
-      height: calc(100vh - 84px);
+      height: calc(100vh - 52px);
     }
 
     /* ── Left panel ── */
@@ -124,13 +88,14 @@
     #search {
       width: 100%;
       background: var(--surface);
-      border: 1px solid var(--gold-border);
+      border: 2px solid var(--gold);
       color: var(--text);
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-size: 0.8rem;
       padding: 9px 12px;
       outline: none;
       transition: border-color 0.15s;
+      border-radius: 4px;
     }
 
     #search::placeholder { color: var(--text3); }
@@ -150,7 +115,7 @@
     .section-hdr {
       padding: 10px 14px 6px;
       font-size: 0.68rem;
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-weight: 600;
       letter-spacing: 0.12em;
       text-transform: uppercase;
@@ -193,13 +158,13 @@
     .list-item-sub {
       font-size: 0.72rem;
       color: var(--text3);
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
     }
 
     .list-item-ext {
       font-size: 0.72rem;
       color: var(--gold);
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
     }
 
     /* ── Right panel ── */
@@ -222,7 +187,7 @@
       justify-content: center;
       height: 100%;
       color: var(--text3);
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-size: 0.8rem;
       gap: 10px;
     }
@@ -233,7 +198,7 @@
 
     .detail-cat {
       font-size: 0.68rem;
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-weight: 600;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -252,7 +217,7 @@
       font-size: 0.8rem;
       color: var(--text3);
       margin-bottom: 24px;
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
     }
 
     .detail-divider {
@@ -263,7 +228,7 @@
 
     .detail-section-title {
       font-size: 0.68rem;
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--text3);
@@ -280,13 +245,14 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 12px 16px;
-      background: var(--surface);
-      border: 1px solid var(--border2);
-      transition: border-color 0.15s;
+      padding: 10px 2px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border2);
+      transition: background 0.15s;
     }
 
-    .contact-block:hover { border-color: var(--gold-border); }
+    .contact-block:hover { background: rgba(255,255,255,0.02); }
 
     .cb-icon {
       font-size: 1rem;
@@ -300,7 +266,7 @@
 
     .cb-label {
       font-size: 0.65rem;
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       color: var(--text3);
       text-transform: uppercase;
       letter-spacing: 0.1em;
@@ -308,7 +274,7 @@
     }
 
     .cb-value {
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-size: 0.88rem;
       color: var(--text);
       word-break: break-all;
@@ -325,7 +291,7 @@
       background: transparent;
       border: 1px solid var(--border2);
       color: var(--text3);
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-size: 0.7rem;
       padding: 5px 10px;
       cursor: pointer;
@@ -334,20 +300,21 @@
     }
 
     .cb-copy:hover {
-      border-color: var(--gold);
+      border-color: var(--gold-border);
       color: var(--gold-light);
     }
 
     .consultants-box {
-      padding: 12px 16px;
-      background: var(--surface);
-      border: 1px solid var(--border2);
+      padding: 10px 0 12px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border2);
       margin-bottom: 10px;
     }
 
     .consultants-box-label {
       font-size: 0.65rem;
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       color: var(--text3);
       text-transform: uppercase;
       letter-spacing: 0.1em;
@@ -363,20 +330,20 @@
     .location-chip {
       display: inline-block;
       padding: 4px 12px;
-      background: var(--surface);
+      background: transparent;
       border: 1px solid var(--gold-border);
       color: var(--gold-light);
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-size: 0.78rem;
     }
 
     .staff-chip {
       display: inline-block;
       padding: 4px 12px;
-      background: var(--surface);
+      background: transparent;
       border: 1px solid var(--border2);
       color: var(--text2);
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-size: 0.78rem;
     }
 
@@ -385,7 +352,7 @@
       padding: 8px 14px;
       border-top: 1px solid var(--border2);
       font-size: 0.68rem;
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       color: var(--text3);
     }
 
@@ -397,10 +364,10 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%) translateY(12px);
-      background: #0d0d0d;
-      border: 1px solid var(--gold);
+      background: var(--surface);
+      border: 2px solid var(--gold);
       color: var(--gold-light);
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       font-size: 0.75rem;
       padding: 8px 18px;
       opacity: 0;
@@ -420,7 +387,7 @@
       padding: 30px 14px;
       text-align: center;
       font-size: 0.75rem;
-      font-family: 'Roboto Mono', monospace;
+      font-family: Arial, sans-serif;
       color: var(--text3);
     }
 
@@ -439,16 +406,6 @@
       <div class="topbar-title">Directory</div>
       <div class="topbar-sub">ECHOCARDIOGRAPHY</div>
     </div>
-  </div>
-
-  <div class="tabbar" id="tabbar">
-    <button class="tab active" data-filter="all">All</button>
-    <button class="tab" data-filter="Cardiology Secretaries">Secretaries</button>
-    <button class="tab" data-filter="Consultants">Consultants</button>
-    <button class="tab" data-filter="Heart Centre">Heart Centre</button>
-    <button class="tab" data-filter="Cardiac Investigations">Cardiac Inv.</button>
-    <button class="tab" data-filter="Wards">Wards</button>
-    <button class="tab" data-filter="Other">Other</button>
   </div>
 
   <div class="layout">
@@ -474,7 +431,6 @@
 
   <script>
     let allContacts = [];
-    let activeFilter = 'all';
     let searchQuery = '';
     let selectedId = null;
 
@@ -512,15 +468,6 @@
       render();
     });
 
-    document.getElementById('tabbar').addEventListener('click', e => {
-      const btn = e.target.closest('.tab');
-      if (!btn) return;
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      btn.classList.add('active');
-      activeFilter = btn.dataset.filter;
-      render();
-    });
-
     function matchesSearch(c) {
       if (!searchQuery) return true;
       const hay = [c.name, c.role, c.category, c.email, c.tel, c.ext,
@@ -528,10 +475,6 @@
                    ...(c.consultants||[]), ...(c.tags||[])]
         .filter(Boolean).join(' ').toLowerCase();
       return searchQuery.split(' ').every(w => hay.includes(w));
-    }
-
-    function matchesFilter(c) {
-      return activeFilter === 'all' || c.category === activeFilter;
     }
 
     function copyText(text, label) {
@@ -544,7 +487,7 @@
     }
 
     function render() {
-      const filtered = allContacts.filter(c => matchesFilter(c) && matchesSearch(c));
+      const filtered = allContacts.filter(c => matchesSearch(c));
 
       const catOrder = ['Cardiology Secretaries','Consultants','Heart Centre','Cardiac Investigations','Wards','Other'];
       const groups = {};
@@ -640,7 +583,7 @@
           <div class="detail-name">${c.name}</div>
           <div class="detail-role">${c.role || c.subcategory || ''}</div>
           ${consultantsHtml}
-          ${contactBlocksHtml ? `<div class="detail-section-title">Contact Details</div><div class="contact-blocks">${contactBlocksHtml}</div>` : '<div style="color:var(--text3);font-family:Roboto Mono,monospace;font-size:0.8rem">No contact details on record.</div>'}
+          ${contactBlocksHtml ? `<div class="detail-section-title">Contact Details</div><div class="contact-blocks">${contactBlocksHtml}</div>` : '<div style="color:var(--text3);font-family:Arial,sans-serif;font-size:0.8rem">No contact details on record.</div>'}
         </div>
       `;
     }
