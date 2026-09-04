@@ -26,9 +26,9 @@ A simple web application for quickly generating and copying standardized echo tr
 - 🟢 **Green Pathway**: Standard requests
 
 #### OP Mode
-- 🟣 **Urgent**: Purple color
-- 🔴 **Soon**: Red color
-- 🟡 **Routine**: Amber color
+- 🔴 **Urgent**: Red color
+- 🟡 **Soon**: Amber color
+- 🟢 **Routine**: Green color
 - 🔵 **Rejected**: Blue color
 
 ## File Structure

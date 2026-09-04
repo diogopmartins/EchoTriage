@@ -1133,11 +1133,11 @@
                             if (textContent.includes('REJECTED')) {
                                 sentence.classList.add('sentence-blue');
                             } else if (textContent.includes('URGENT')) {
-                                sentence.classList.add('sentence-purple');
-                            } else if (textContent.includes('SOON')) {
                                 sentence.classList.add('sentence-red');
-                            } else if (textContent.includes('ROUTINE')) {
+                            } else if (textContent.includes('SOON')) {
                                 sentence.classList.add('sentence-amber');
+                            } else if (textContent.includes('ROUTINE')) {
+                                sentence.classList.add('sentence-green');
                             } else {
                                 sentence.classList.add('sentence-green');
                             }
@@ -1176,9 +1176,9 @@
                         let pathwayType = 'green';
                         if (mode === 'OP') {
                             pathwayType = textContent.includes('REJECTED') ? 'rejected' :
-                                         textContent.includes('URGENT') ? 'purple' :
-                                         textContent.includes('SOON') ? 'red' :
-                                         textContent.includes('ROUTINE') ? 'amber' : 'green';
+                                         textContent.includes('URGENT') ? 'red' :
+                                         textContent.includes('SOON') ? 'amber' :
+                                         textContent.includes('ROUTINE') ? 'green' : 'green';
                         } else {
                             pathwayType = textContent.includes('PURPLE PATHWAY') ? 'purple' :
                                          textContent.includes('RED PATHWAY') ? 'red' : 
