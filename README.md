@@ -8,7 +8,7 @@ A simple web application for quickly generating and copying standardized echo tr
 
 ### Dual Mode Support
 - **IP Triage Mode**: For inpatient echo requests with color-coded pathways (Purple, Red, Amber, Green)
-- **OP Triage Mode**: For outpatient echo requests with priority levels (High Priority, Urgent, Indicated, Not Indicated)
+- **OP Triage Mode**: For outpatient echo requests with priority levels (Urgent, Soon, Routine, Rejected)
 
 ### Interactive Features
 - **One-click Copy**: Click any sentence to copy it to your clipboard
@@ -26,10 +26,10 @@ A simple web application for quickly generating and copying standardized echo tr
 - 🟢 **Green Pathway**: Standard requests
 
 #### OP Mode
-- 🟣 **High Priority**: Purple color
-- 🔴 **Urgent**: Red color - within 2 weeks
-- 🟡 **Indicated**: Amber color - within 72 hours
-- 🔵 **Not Indicated**: Blue color
+- 🟣 **Urgent**: Purple color
+- 🔴 **Soon**: Red color
+- 🟡 **Routine**: Amber color
+- 🔵 **Rejected**: Blue color
 
 ## File Structure
 
@@ -111,7 +111,7 @@ Setting up and customizing the sentence lists is incredibly simple - **no coding
 ```
 
 **Tips:**
-- Sentences are automatically color-coded based on keywords (RED PATHWAY, URGENT, NOT INDICATED, etc.)
+- Sentences are automatically color-coded based on keywords (RED PATHWAY, URGENT, SOON, ROUTINE, REJECTED, etc.)
 - Add "PREVIOUS ECHO." anywhere in a sentence to enable the previous echo modal feature
 - Changes take effect immediately - just refresh your browser
 
