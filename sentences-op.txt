@@ -1,14 +1,14 @@
-- HIGH PRIORITY
--- HIGH PRIORITY - OP Echo request has been received and triaged as high Priority.
-
 - URGENT
--- URGENT PATHWAY - Request has been triaged as URGENT and will be performed within 2 weeks. 
--- URGENT PATHWAY - Request has been triaged as URGENT and will be performed within 2 weeks. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
+-- URGENT - OP Echo request has been received and triaged as high Priority.
 
-- INDICATED
--- INDICATED - Request has been triaged as INDICATED and we aim to perform within 6 weeks. 
--- INDICATED - Request has been triaged as INDICATED and we aim to perform within 6 weeks. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
+- SOON
+-- SOON  - Request has been triaged as URGENT and will be performed within 2 weeks. 
+-- SOON  - Request has been triaged as URGENT and will be performed within 2 weeks. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
+
+- ROUTINE
+-- ROUTINE - Request has been triaged as INDICATED and we aim to perform within 6 weeks. 
+-- ROUTINE - Request has been triaged as INDICATED and we aim to perform within 6 weeks. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
 
 
-- NOT INDICATED
--- NOT INDICATED - Request has been rejected as request does not provide the clinical information for heart failure triage such: ECG, BNP, NYHA Score, Cardiovascular examination (?JVP , ?murmurs), Chest XRay and if there was a previous echo. Please submit a new request with the appropriate clinical details, in accordance with the inpatient echo policy. For more information, call 4473. Please note that a new request must be submitted.
+- REJECTED
+-- REJECTED - Request has been rejected as request does not provide the clinical information for heart failure triage such: ECG, BNP, NYHA Score, Cardiovascular examination (?JVP , ?murmurs), Chest XRay and if there was a previous echo. Please submit a new request with the appropriate clinical details, in accordance with the inpatient echo policy. For more information, call 4473. Please note that a new request must be submitted.
