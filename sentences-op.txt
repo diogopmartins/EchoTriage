@@ -1,13 +1,16 @@
 - URGENT
--- URGENT - OP Echo request has been received and triaged as high Priority.
+-- URGENT - Request has been triaged as URGENT.
+-- URGENT - Request has been triaged as URGENT. Not for CDC.
+
 
 - SOON
--- SOON  - Request has been triaged as URGENT and will be performed within 2 weeks. 
--- SOON  - Request has been triaged as URGENT and will be performed within 2 weeks. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
+-- SOON  - Request has been triaged as SOON.
+-- SOON  - Request has been triaged as SOON. Not for CDC.
+
 
 - ROUTINE
--- ROUTINE - Request has been triaged as INDICATED and we aim to perform within 6 weeks. 
--- ROUTINE - Request has been triaged as INDICATED and we aim to perform within 6 weeks. Please note we currently experiencing a high volume of echo requests and therefore performance time may be delayed.
+-- ROUTINE - Request has been triaged as ROUTINE.
+-- ROUTINE - Request has been triaged as ROUTINE. Not for CDC.
 
 
 - REJECTED
