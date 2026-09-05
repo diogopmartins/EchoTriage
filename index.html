@@ -149,13 +149,19 @@
             min-height: 400px;
         }
 
+        /* Native PDF viewers paint above HTML; hide the embed while zooming */
+        .pdf-container.zoom-active embed {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
         .pdf-zoom-overlay {
             position: absolute;
             inset: 0;
             display: none;
             flex-direction: column;
             background: #1C1C1C;
-            z-index: 2;
+            z-index: 20;
         }
 
         .pdf-zoom-overlay.active {
@@ -860,8 +866,8 @@
         let includePreviousEcho = true;
         let previousEchoText = '';
         let currentMode = 'IP'; // 'IP' or 'OP'
-        let opPdfZoomHideTimer = null;
-        let activeOpPdfRegion = null;
+        let pdfZoomHideTimer = null;
+        let activePdfZoomRegion = null;
 
         // Crop boxes are fractions of the BSE OP poster (bse-op-poster.jpg)
         const OP_POSTER_REGIONS = {
@@ -877,6 +883,26 @@
             preop:    { x: 0.740, y: 0.228, w: 0.245, h: 0.300, label: 'Pre-operative echocardiography' },
             chf:      { x: 0.740, y: 0.525, w: 0.245, h: 0.175, label: 'Established CHF and cardiomyopathy' },
             aorto:    { x: 0.740, y: 0.695, w: 0.245, h: 0.290, label: 'Aortopathy' }
+        };
+
+        function ipPolicySection(page, x, y, w, h, label) {
+            return {
+                src: `policy-ip-pages/p${String(page).padStart(2, '0')}.jpg`,
+                prefix: 'Dept Policy',
+                x, y, w, h, label
+            };
+        }
+
+        const IP_POLICY_REGIONS = {
+            rejectCriteria:  ipPolicySection(3, 0.06, 0.135, 0.88, 0.255, 'Requests that will be rejected'),
+            referralQuality: ipPolicySection(3, 0.06, 0.555, 0.88, 0.355, 'Referral information required'),
+            chronic:         ipPolicySection(4, 0.06, 0.125, 0.88, 0.20, 'Monitoring chronic conditions'),
+            colourTriage:    ipPolicySection(5, 0.06, 0.135, 0.88, 0.38, 'Triage colour and timeframe'),
+            hf:              ipPolicySection(9, 0.06, 0.165, 0.88, 0.55, 'Suspected heart failure'),
+            syncope:         ipPolicySection(9, 0.06, 0.715, 0.88, 0.185, 'Syncope'),
+            pe:              ipPolicySection(10, 0.06, 0.375, 0.88, 0.20, 'Pulmonary embolism'),
+            ie:              ipPolicySection(11, 0.06, 0.12, 0.88, 0.48, "Modified Duke's criteria"),
+            discharge:       ipPolicySection(14, 0.06, 0.505, 0.88, 0.195, 'Discharge dependent IP echo')
         };
 
         function getOpPosterRegion(text) {
@@ -895,23 +921,45 @@
             return OP_POSTER_REGIONS.guidance;
         }
 
-        function hideOpPdfZoom() {
+        function getIpPolicyRegion(text) {
+            const t = text.toLowerCase();
+            if (t.includes('duke') || t.includes('infective endocarditis')) return IP_POLICY_REGIONS.ie;
+            if (t.includes('ctpa') || t.includes('right heart strain') || t.includes('3 months post')) return IP_POLICY_REGIONS.pe;
+            if (t.includes('discharge dependent')) return IP_POLICY_REGIONS.discharge;
+            if (t.includes('syncope') && (t.includes('normal ecg') || t.includes('cardiac exam'))) return IP_POLICY_REGIONS.syncope;
+            if (t.includes('chronic condition') || t.includes('no immediate impact')) return IP_POLICY_REGIONS.chronic;
+            if (t.includes('raised') && t.includes('pending')) return IP_POLICY_REGIONS.referralQuality;
+            if (t.includes('heart failure triage') || t.includes('nyha')) return IP_POLICY_REGIONS.hf;
+            if (t.includes('fast atrial') || t.includes('below 100') || t.includes('non-diagnostic')) return IP_POLICY_REGIONS.referralQuality;
+            if (t.includes('ambiguous') || t.includes('listing medical')) return IP_POLICY_REGIONS.referralQuality;
+            if (t.includes('clinical question') || t.includes('efficient triage') || t.includes('recent echo') || t.includes('no significant clinical change')) return IP_POLICY_REGIONS.rejectCriteria;
+            if (t.includes('red pathway') || t.includes('amber pathway')) return IP_POLICY_REGIONS.colourTriage;
+            if (t.includes('green pathway') && t.includes('re-request as op')) return IP_POLICY_REGIONS.colourTriage;
+            return null;
+        }
+
+        function hidePdfZoom() {
             const overlay = document.getElementById('pdfZoomOverlay');
+            const pdfContainer = document.querySelector('.pdf-container');
             if (overlay) {
                 overlay.classList.remove('active');
                 overlay.setAttribute('aria-hidden', 'true');
             }
-            activeOpPdfRegion = null;
+            if (pdfContainer) pdfContainer.classList.remove('zoom-active');
+            activePdfZoomRegion = null;
         }
 
-        function layoutOpPdfZoom(region) {
+        function layoutPdfZoom(region, attempt = 0) {
             const frame = document.querySelector('.pdf-zoom-frame');
             const img = document.getElementById('pdfZoomImg');
             if (!frame || !img || !img.naturalWidth) return;
 
             const fw = frame.clientWidth;
             const fh = frame.clientHeight;
-            if (fw < 10 || fh < 10) return;
+            if (fw < 10 || fh < 10) {
+                if (attempt < 12) requestAnimationFrame(() => layoutPdfZoom(region, attempt + 1));
+                return;
+            }
 
             const sx = region.x * img.naturalWidth;
             const sy = region.y * img.naturalHeight;
@@ -924,45 +972,56 @@
             img.style.top = `${-sy * scale + (fh - sh * scale) / 2}px`;
         }
 
-        function showOpPdfZoom(region) {
-            if (currentMode !== 'OP' || !region) return;
+        function showPdfZoom(region) {
+            if (!region) return;
             const overlay = document.getElementById('pdfZoomOverlay');
             const caption = document.getElementById('pdfZoomCaption');
             const img = document.getElementById('pdfZoomImg');
+            const pdfContainer = document.querySelector('.pdf-container');
             if (!overlay || !img) return;
 
-            if (opPdfZoomHideTimer) {
-                clearTimeout(opPdfZoomHideTimer);
-                opPdfZoomHideTimer = null;
+            if (pdfZoomHideTimer) {
+                clearTimeout(pdfZoomHideTimer);
+                pdfZoomHideTimer = null;
             }
 
-            activeOpPdfRegion = region;
-            caption.textContent = `BSE OP — ${region.label}`;
+            activePdfZoomRegion = region;
+            caption.textContent = `${region.prefix || 'BSE OP'} — ${region.label}`;
+            if (pdfContainer) pdfContainer.classList.add('zoom-active');
             overlay.classList.add('active');
             overlay.setAttribute('aria-hidden', 'false');
 
-            const apply = () => layoutOpPdfZoom(region);
-            if (img.complete && img.naturalWidth) {
+            const src = region.src || 'bse-op-poster.jpg';
+            const apply = () => layoutPdfZoom(region);
+            if (img.getAttribute('src') !== src) {
+                img.addEventListener('load', apply, { once: true });
+                img.setAttribute('src', src);
+            } else if (img.complete && img.naturalWidth) {
                 requestAnimationFrame(apply);
             } else {
                 img.addEventListener('load', apply, { once: true });
             }
         }
 
-        function scheduleHideOpPdfZoom() {
-            if (opPdfZoomHideTimer) clearTimeout(opPdfZoomHideTimer);
-            opPdfZoomHideTimer = setTimeout(() => {
-                hideOpPdfZoom();
-                opPdfZoomHideTimer = null;
+        function scheduleHidePdfZoom() {
+            if (pdfZoomHideTimer) clearTimeout(pdfZoomHideTimer);
+            pdfZoomHideTimer = setTimeout(() => {
+                hidePdfZoom();
+                pdfZoomHideTimer = null;
             }, 80);
         }
 
-        function attachOpRejectionPdfZoom(sentence, textContent) {
-            sentence.title = 'Hover to preview the matching BSE OP section';
+        function attachPdfZoom(sentence, getRegion) {
             sentence.addEventListener('mouseenter', () => {
-                showOpPdfZoom(getOpPosterRegion(textContent));
+                const region = getRegion();
+                if (region) {
+                    sentence.title = 'Hover to preview the matching policy section';
+                    showPdfZoom(region);
+                } else {
+                    scheduleHidePdfZoom();
+                }
             });
-            sentence.addEventListener('mouseleave', scheduleHideOpPdfZoom);
+            sentence.addEventListener('mouseleave', scheduleHidePdfZoom);
         }
 
         function escapeRegex(string) {
@@ -1306,7 +1365,13 @@
 
                         sentence.onclick = createSentenceClickHandler(textContent);
                         if (mode === 'OP' && textContent.includes('REJECTED')) {
-                            attachOpRejectionPdfZoom(sentence, textContent);
+                            sentence.title = 'Hover to preview the matching BSE OP section';
+                            attachPdfZoom(sentence, () => getOpPosterRegion(textContent));
+                        } else if (mode === 'IP') {
+                            if (getIpPolicyRegion(textContent)) {
+                                sentence.title = 'Hover to preview the matching Dept Policy section';
+                            }
+                            attachPdfZoom(sentence, () => getIpPolicyRegion(textContent));
                         }
                         if (!currentSubgroup) {
                             console.error('No currentSubgroup when trying to add sentence:', textContent.substring(0, 50));
@@ -1413,6 +1478,7 @@
         }
         
         async function loadPDF(fileName) {
+            hidePdfZoom();
             const embedEl = document.querySelector('.pdf-container embed');
             const pdfContainer = document.querySelector('.pdf-container');
 
@@ -1518,7 +1584,7 @@
                     // Hide PDF selector in OP mode (only BSE guidelines available)
                     pdfSelectorContainer.classList.add('hidden');
                 } else {
-                    hideOpPdfZoom();
+                    hidePdfZoom();
                     expectedToggleContainer.classList.remove('hidden');
                     // Show PDF selector in IP mode
                     pdfSelectorContainer.classList.remove('hidden');
@@ -1557,8 +1623,8 @@
             updatePDFSelector();
 
             window.addEventListener('resize', () => {
-                if (currentMode === 'OP' && activeOpPdfRegion) {
-                    layoutOpPdfZoom(activeOpPdfRegion);
+                if (activePdfZoomRegion) {
+                    layoutPdfZoom(activePdfZoomRegion);
                 }
             });
 
