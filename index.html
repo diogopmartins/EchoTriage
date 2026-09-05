@@ -923,6 +923,7 @@
 
         function getIpPolicyRegion(text) {
             const t = text.toLowerCase();
+            if (t.includes('purple pathway') || t.includes('red pathway') || t.includes('amber pathway')) return null;
             if (t.includes('duke') || t.includes('infective endocarditis')) return IP_POLICY_REGIONS.ie;
             if (t.includes('ctpa') || t.includes('right heart strain') || t.includes('3 months post')) return IP_POLICY_REGIONS.pe;
             if (t.includes('discharge dependent')) return IP_POLICY_REGIONS.discharge;
@@ -933,7 +934,6 @@
             if (t.includes('fast atrial') || t.includes('below 100') || t.includes('non-diagnostic')) return IP_POLICY_REGIONS.referralQuality;
             if (t.includes('ambiguous') || t.includes('listing medical')) return IP_POLICY_REGIONS.referralQuality;
             if (t.includes('clinical question') || t.includes('efficient triage') || t.includes('recent echo') || t.includes('no significant clinical change')) return IP_POLICY_REGIONS.rejectCriteria;
-            if (t.includes('red pathway') || t.includes('amber pathway')) return IP_POLICY_REGIONS.colourTriage;
             if (t.includes('green pathway') && t.includes('re-request as op')) return IP_POLICY_REGIONS.colourTriage;
             return null;
         }
@@ -1370,8 +1370,8 @@
                         } else if (mode === 'IP') {
                             if (getIpPolicyRegion(textContent)) {
                                 sentence.title = 'Hover to preview the matching Dept Policy section';
+                                attachPdfZoom(sentence, () => getIpPolicyRegion(textContent));
                             }
-                            attachPdfZoom(sentence, () => getIpPolicyRegion(textContent));
                         }
                         if (!currentSubgroup) {
                             console.error('No currentSubgroup when trying to add sentence:', textContent.substring(0, 50));
