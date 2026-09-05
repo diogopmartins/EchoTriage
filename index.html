@@ -128,6 +128,7 @@
         }
 
         .pdf-container {
+            position: relative;
             border: 2px solid #FFD67A;
             border-radius: 5px;
             background: #1C1C1C;
@@ -146,6 +147,46 @@
             height: 100%;
             border: none;
             min-height: 400px;
+        }
+
+        .pdf-zoom-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            background: #1C1C1C;
+            z-index: 2;
+        }
+
+        .pdf-zoom-overlay.active {
+            display: flex;
+        }
+
+        .pdf-zoom-caption {
+            flex-shrink: 0;
+            color: #FFD67A;
+            font-size: 0.8rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            padding: 8px 12px 6px;
+        }
+
+        .pdf-zoom-frame {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            margin: 0 10px 10px;
+            border: 2px solid #0066CC;
+            border-radius: 5px;
+            background: #ffffff;
+        }
+
+        .pdf-zoom-frame img {
+            position: absolute;
+            max-width: none;
+            max-height: none;
+            user-select: none;
+            pointer-events: none;
         }
 
         .pdf-error {
@@ -819,6 +860,110 @@
         let includePreviousEcho = true;
         let previousEchoText = '';
         let currentMode = 'IP'; // 'IP' or 'OP'
+        let opPdfZoomHideTimer = null;
+        let activeOpPdfRegion = null;
+
+        // Crop boxes are fractions of the BSE OP poster (bse-op-poster.jpg)
+        const OP_POSTER_REGIONS = {
+            guidance: { x: 0.330, y: 0.095, w: 0.340, h: 0.120, label: 'How this document works' },
+            murmur:   { x: 0.018, y: 0.228, w: 0.235, h: 0.145, label: 'Heart murmur' },
+            hf:       { x: 0.018, y: 0.355, w: 0.235, h: 0.335, label: 'Suspected heart failure' },
+            htn:      { x: 0.018, y: 0.695, w: 0.235, h: 0.270, label: 'Hypertension and LVH' },
+            mass:     { x: 0.250, y: 0.228, w: 0.235, h: 0.400, label: 'Suspected cardiac mass / embolism' },
+            pulm:     { x: 0.250, y: 0.695, w: 0.235, h: 0.255, label: 'Pulmonary disease' },
+            af:       { x: 0.495, y: 0.228, w: 0.235, h: 0.145, label: 'Atrial fibrillation' },
+            palp:     { x: 0.495, y: 0.372, w: 0.235, h: 0.320, label: 'Palpitations and syncope' },
+            peri:     { x: 0.495, y: 0.695, w: 0.235, h: 0.220, label: 'Suspected pericardial disease' },
+            preop:    { x: 0.740, y: 0.228, w: 0.245, h: 0.300, label: 'Pre-operative echocardiography' },
+            chf:      { x: 0.740, y: 0.525, w: 0.245, h: 0.175, label: 'Established CHF and cardiomyopathy' },
+            aorto:    { x: 0.740, y: 0.695, w: 0.245, h: 0.290, label: 'Aortopathy' }
+        };
+
+        function getOpPosterRegion(text) {
+            const t = text.toLowerCase();
+            if (t.includes('unchanged murmur')) return OP_POSTER_REGIONS.murmur;
+            if (t.includes('vasovagal') || t.includes('palpitations without') || t.includes('ectopy')) return OP_POSTER_REGIONS.palp;
+            if (t.includes('anticoagulation')) return OP_POSTER_REGIONS.mass;
+            if (t.includes('pericardial') || t.includes('follow-up study')) return OP_POSTER_REGIONS.peri;
+            if (t.includes('pulmonary hypertension') || t.includes('cteph') || t.includes('lung disease or left heart')) return OP_POSTER_REGIONS.pulm;
+            if (t.includes('pre-operative') || t.includes('active echo follow-up')) return OP_POSTER_REGIONS.preop;
+            if (t.includes('essential hypertension') || t.includes('left ventricular hypertrophy') || t.includes('mass regression') || t.includes('left ventricular function in an asymptomatic')) return OP_POSTER_REGIONS.htn;
+            if (t.includes('established chf') || t.includes('following procedures is contemplated')) return OP_POSTER_REGIONS.chf;
+            if (t.includes('guidance for atrial fibrillation') || t.includes('no change in cardiovascular status') || t.includes('unlikely to alter management')) return OP_POSTER_REGIONS.af;
+            if (t.includes('nt-probnp') || t.includes('heart failure triage') || t.includes('gp direct') || t.includes('uncontrolled ventricular') || t.includes('no change in management is contemplated')) return OP_POSTER_REGIONS.hf;
+            if (t.includes('frail') || t.includes('terminal illness')) return OP_POSTER_REGIONS.aorto;
+            return OP_POSTER_REGIONS.guidance;
+        }
+
+        function hideOpPdfZoom() {
+            const overlay = document.getElementById('pdfZoomOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                overlay.setAttribute('aria-hidden', 'true');
+            }
+            activeOpPdfRegion = null;
+        }
+
+        function layoutOpPdfZoom(region) {
+            const frame = document.querySelector('.pdf-zoom-frame');
+            const img = document.getElementById('pdfZoomImg');
+            if (!frame || !img || !img.naturalWidth) return;
+
+            const fw = frame.clientWidth;
+            const fh = frame.clientHeight;
+            if (fw < 10 || fh < 10) return;
+
+            const sx = region.x * img.naturalWidth;
+            const sy = region.y * img.naturalHeight;
+            const sw = region.w * img.naturalWidth;
+            const sh = region.h * img.naturalHeight;
+            const scale = Math.min(fw / sw, fh / sh);
+            img.style.width = `${img.naturalWidth * scale}px`;
+            img.style.height = `${img.naturalHeight * scale}px`;
+            img.style.left = `${-sx * scale + (fw - sw * scale) / 2}px`;
+            img.style.top = `${-sy * scale + (fh - sh * scale) / 2}px`;
+        }
+
+        function showOpPdfZoom(region) {
+            if (currentMode !== 'OP' || !region) return;
+            const overlay = document.getElementById('pdfZoomOverlay');
+            const caption = document.getElementById('pdfZoomCaption');
+            const img = document.getElementById('pdfZoomImg');
+            if (!overlay || !img) return;
+
+            if (opPdfZoomHideTimer) {
+                clearTimeout(opPdfZoomHideTimer);
+                opPdfZoomHideTimer = null;
+            }
+
+            activeOpPdfRegion = region;
+            caption.textContent = `BSE OP — ${region.label}`;
+            overlay.classList.add('active');
+            overlay.setAttribute('aria-hidden', 'false');
+
+            const apply = () => layoutOpPdfZoom(region);
+            if (img.complete && img.naturalWidth) {
+                requestAnimationFrame(apply);
+            } else {
+                img.addEventListener('load', apply, { once: true });
+            }
+        }
+
+        function scheduleHideOpPdfZoom() {
+            if (opPdfZoomHideTimer) clearTimeout(opPdfZoomHideTimer);
+            opPdfZoomHideTimer = setTimeout(() => {
+                hideOpPdfZoom();
+                opPdfZoomHideTimer = null;
+            }, 80);
+        }
+
+        function attachOpRejectionPdfZoom(sentence, textContent) {
+            sentence.title = 'Hover to preview the matching BSE OP section';
+            sentence.addEventListener('mouseenter', () => {
+                showOpPdfZoom(getOpPosterRegion(textContent));
+            });
+            sentence.addEventListener('mouseleave', scheduleHideOpPdfZoom);
+        }
 
         function escapeRegex(string) {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1160,6 +1305,9 @@
                         }
 
                         sentence.onclick = createSentenceClickHandler(textContent);
+                        if (mode === 'OP' && textContent.includes('REJECTED')) {
+                            attachOpRejectionPdfZoom(sentence, textContent);
+                        }
                         if (!currentSubgroup) {
                             console.error('No currentSubgroup when trying to add sentence:', textContent.substring(0, 50));
                             return; // Skip this sentence if no subgroup
@@ -1370,6 +1518,7 @@
                     // Hide PDF selector in OP mode (only BSE guidelines available)
                     pdfSelectorContainer.classList.add('hidden');
                 } else {
+                    hideOpPdfZoom();
                     expectedToggleContainer.classList.remove('hidden');
                     // Show PDF selector in IP mode
                     pdfSelectorContainer.classList.remove('hidden');
@@ -1406,6 +1555,12 @@
 
             // Initialize PDF selector for IP mode
             updatePDFSelector();
+
+            window.addEventListener('resize', () => {
+                if (currentMode === 'OP' && activeOpPdfRegion) {
+                    layoutOpPdfZoom(activeOpPdfRegion);
+                }
+            });
 
             // Contacts modal handlers
             const contactsBtn = document.getElementById('openContactsBtn');
@@ -1498,6 +1653,12 @@
         </div>
         <div class="pdf-container">
             <embed src="policy-ip.pdf" type="application/pdf">
+            <div id="pdfZoomOverlay" class="pdf-zoom-overlay" aria-hidden="true">
+                <div id="pdfZoomCaption" class="pdf-zoom-caption"></div>
+                <div class="pdf-zoom-frame">
+                    <img id="pdfZoomImg" src="bse-op-poster.jpg" alt="BSE outpatient echo triage poster">
+                </div>
+            </div>
         </div>
         <div class="author-container">
             <div class="toggles-row">
