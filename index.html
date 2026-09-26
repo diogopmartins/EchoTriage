@@ -563,6 +563,60 @@
             cursor: pointer;
         }
 
+        /* Follow-up interval picker, shown for FOLLOW UP sentences only */
+        .modal-followup {
+            display: none;
+            margin-bottom: 15px;
+        }
+
+        .modal-followup.show {
+            display: block;
+        }
+
+        .modal-followup-title {
+            color: #FFD67A;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .followup-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .followup-option {
+            padding: 5px 10px;
+            background-color: #2A2A2A;
+            border: 2px solid #008B8B;
+            border-radius: 14px;
+            color: #FFFFFF;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .followup-option:hover {
+            background-color: rgba(0, 139, 139, 0.35);
+        }
+
+        .followup-option.selected,
+        .followup-option.selected:hover {
+            background-color: #008B8B;
+            font-weight: bold;
+        }
+
+        .modal-content input.followup-other {
+            display: none;
+            margin-top: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .modal-content input.followup-other.show {
+            display: block;
+        }
+
         .modal-buttons {
             display: flex;
             gap: 10px;
@@ -1071,7 +1125,7 @@
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
-        function copyToClipboard(textContent, event, skipPreviousEcho = false, notForCdc = false) {
+        function copyToClipboard(textContent, event, skipPreviousEcho = false, notForCdc = false, followUp = '') {
             const now = new Date();
             let hoursToAdd = 0;
 
@@ -1110,7 +1164,8 @@
             const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
             // Not for CDC goes after the category, e.g. "FOLLOW UP - NOT FOR CDC - Request ..."
             const sentence = notForCdc ? textContent.replace(/^(.*?)\s+-\s+/, '$1 - NOT FOR CDC - ') : textContent;
-            const textToCopy = `${sentence}${previousEcho} ${timestamp}`;
+            const followUpNote = followUp ? ` ${followUp}` : '';
+            const textToCopy = `${sentence}${followUpNote}${previousEcho} ${timestamp}`;
             
             // Copy to clipboard with error handling
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1162,6 +1217,10 @@
                     const copyBtn = document.getElementById('notForCdcCopy');
                     const cdcLabel = document.getElementById('notForCdcLabel');
                     const cdcBox = document.getElementById('notForCdcInput');
+                    const followUpBox = document.getElementById('followUpPicker');
+                    const followUpOptions = followUpBox.querySelectorAll('.followup-option');
+                    const followUpOther = document.getElementById('followUpOther');
+                    const isFollowUp = currentMode === 'OP' && textContent.includes('FOLLOW UP');
                     
                     // Get the clicked sentence element to copy its classes
                     const clickedSentence = event.target;
@@ -1185,6 +1244,11 @@
                     // Not for CDC tickbox is OP only and starts unticked every time
                     cdcBox.checked = false;
                     cdcLabel.classList.toggle('show', cdcApplies);
+                    // Follow-up interval picker is FOLLOW UP only and starts on "As per request" every time
+                    followUpBox.classList.toggle('show', isFollowUp);
+                    followUpOptions.forEach(opt => opt.classList.toggle('selected', opt.dataset.value === 'request'));
+                    followUpOther.value = '';
+                    followUpOther.classList.remove('show');
                     modal.querySelector('.modal-content').classList.toggle('cdc-only', cdcOnly);
                     modal.classList.add('show');
                     (cdcOnly ? copyBtn : input).focus();
@@ -1196,7 +1260,34 @@
                         skipBtn.removeEventListener('click', handleSkip);
                         closeBtn.removeEventListener('click', handleClose);
                         copyBtn.removeEventListener('click', handleCopy);
+                        followUpBox.removeEventListener('click', handleFollowUpPick);
                         modal.removeEventListener('keydown', handleKeyDown);
+                    };
+                    
+                    // Select one follow-up interval; "Other" reveals a free-text field
+                    const handleFollowUpPick = (e) => {
+                        const opt = e.target.closest('.followup-option');
+                        if (!opt) return;
+                        followUpOptions.forEach(o => o.classList.toggle('selected', o === opt));
+                        const isOther = opt.dataset.value === 'other';
+                        followUpOther.classList.toggle('show', isOther);
+                        if (isOther) followUpOther.focus();
+                    };
+                    
+                    // Follow-up text for the copied sentence: '' when not FOLLOW UP, null when "Other" is empty
+                    const getFollowUp = () => {
+                        if (!isFollowUp) return '';
+                        const selected = followUpBox.querySelector('.followup-option.selected');
+                        if (selected.dataset.value === 'request') return 'Follow up as per request.';
+                        if (selected.dataset.value !== 'other') return `Follow up in ${selected.textContent.trim().toLowerCase()}.`;
+                        const other = followUpOther.value.trim().replace(/\.+$/, '');
+                        if (!other) {
+                            followUpOther.style.borderColor = '#FF6B6B';
+                            followUpOther.focus();
+                            setTimeout(() => { followUpOther.style.borderColor = ''; }, 2000);
+                            return null;
+                        }
+                        return `Follow up: ${other}.`;
                     };
                     
                     // Handle confirm
@@ -1213,30 +1304,38 @@
                             }, 2000);
                             return;
                         }
+                        const followUp = getFollowUp();
+                        if (followUp === null) return;
                         previousEchoText = echoText; // Store the text
-                        copyToClipboard(textContent, event, false, cdcBox.checked);
+                        copyToClipboard(textContent, event, false, cdcBox.checked, followUp);
                         modal.classList.remove('show');
                         cleanup();
                     };
                     
                     // Handle cancel - set empty and copy
                     const handleCancel = () => {
+                        const followUp = getFollowUp();
+                        if (followUp === null) return;
                         previousEchoText = ''; // Clear previous echo text
-                        copyToClipboard(textContent, event, false, cdcBox.checked);
+                        copyToClipboard(textContent, event, false, cdcBox.checked, followUp);
                         modal.classList.remove('show');
                         cleanup();
                     };
                     
                     // Handle skip - copy without any previous echo information
                     const handleSkip = () => {
-                        copyToClipboard(textContent, event, true, cdcBox.checked); // Skip previous echo
+                        const followUp = getFollowUp();
+                        if (followUp === null) return;
+                        copyToClipboard(textContent, event, true, cdcBox.checked, followUp); // Skip previous echo
                         modal.classList.remove('show');
                         cleanup();
                     };
                     
                     // Handle copy - previous echo is off, copy with the Not for CDC choice
                     const handleCopy = () => {
-                        copyToClipboard(textContent, event, true, cdcBox.checked);
+                        const followUp = getFollowUp();
+                        if (followUp === null) return;
+                        copyToClipboard(textContent, event, true, cdcBox.checked, followUp);
                         modal.classList.remove('show');
                         cleanup();
                     };
@@ -1249,7 +1348,13 @@
                     
                     // Handle Enter key
                     const handleKeyDown = (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey && (cdcOnly || e.target === input)) {
+                        // Enter on a follow-up option selects it rather than copying
+                        if (e.key === 'Enter' && e.target.classList.contains('followup-option')) {
+                            return;
+                        } else if (e.key === 'Enter' && !cdcOnly && e.target === followUpOther) {
+                            e.preventDefault();
+                            input.focus(); // Move on to the previous echo box
+                        } else if (e.key === 'Enter' && !e.shiftKey && (cdcOnly || e.target === input)) {
                             e.preventDefault();
                             cdcOnly ? handleCopy() : handleConfirm();
                         } else if (e.key === 'Escape') {
@@ -1262,6 +1367,7 @@
                     skipBtn.addEventListener('click', handleSkip);
                     closeBtn.addEventListener('click', handleClose);
                     copyBtn.addEventListener('click', handleCopy);
+                    followUpBox.addEventListener('click', handleFollowUpPick);
                     modal.addEventListener('keydown', handleKeyDown);
                 } else {
                     // Normal copy without popup
@@ -1839,6 +1945,21 @@
         <button class="modal-close" id="previousEchoClose" aria-label="Close">×</button>
         <div style="margin-top: 45px;">
             <div id="modalSentence" class="modal-sentence"></div>
+            <div class="modal-followup" id="followUpPicker">
+                <div class="modal-followup-title">Follow up in:</div>
+                <div class="followup-options">
+                    <button type="button" class="followup-option" data-value="request">As per request</button>
+                    <button type="button" class="followup-option" data-value="3m">3 Months</button>
+                    <button type="button" class="followup-option" data-value="6m">6 Months</button>
+                    <button type="button" class="followup-option" data-value="1y">1 Year</button>
+                    <button type="button" class="followup-option" data-value="18m">18 Months</button>
+                    <button type="button" class="followup-option" data-value="2y">2 Years</button>
+                    <button type="button" class="followup-option" data-value="3y">3 Years</button>
+                    <button type="button" class="followup-option" data-value="5y">5 Years</button>
+                    <button type="button" class="followup-option" data-value="other">Other</button>
+                </div>
+                <input type="text" id="followUpOther" class="followup-other" placeholder="Enter follow-up interval..." autocomplete="off">
+            </div>
             <h3 class="echo-only">If available, enter previous echo details:</h3>
         </div>
         <textarea id="previousEchoInput" class="echo-only" placeholder="Enter previous echo date and summary..." autocomplete="off" rows="5"></textarea>
