@@ -1163,9 +1163,10 @@
 
             const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
             // Not for CDC goes after the category, e.g. "FOLLOW UP - NOT FOR CDC - Request ..."
-            const sentence = notForCdc ? textContent.replace(/^(.*?)\s+-\s+/, '$1 - NOT FOR CDC - ') : textContent;
-            const followUpNote = followUp ? ` ${followUp}` : '';
-            const textToCopy = `${sentence}${followUpNote}${previousEcho} ${timestamp}`;
+            let sentence = notForCdc ? textContent.replace(/^(.*?)\s+-\s+/, '$1 - NOT FOR CDC - ') : textContent;
+            // Follow-up interval goes right after the category, e.g. "FOLLOW UP in 3 months - NOT FOR CDC - Request ..."
+            if (followUp) sentence = sentence.replace(/^FOLLOW UP/, `FOLLOW UP ${followUp}`);
+            const textToCopy = `${sentence}${previousEcho} ${timestamp}`;
             
             // Copy to clipboard with error handling
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1274,12 +1275,12 @@
                         if (isOther) followUpOther.focus();
                     };
                     
-                    // Follow-up text for the copied sentence: '' when not FOLLOW UP, null when "Other" is empty
+                    // Follow-up interval placed after "FOLLOW UP": '' when not FOLLOW UP, null when "Other" is empty
                     const getFollowUp = () => {
                         if (!isFollowUp) return '';
                         const selected = followUpBox.querySelector('.followup-option.selected');
-                        if (selected.dataset.value === 'request') return 'Follow up as per request.';
-                        if (selected.dataset.value !== 'other') return `Follow up in ${selected.textContent.trim().toLowerCase()}.`;
+                        if (selected.dataset.value === 'request') return 'as stated on the request';
+                        if (selected.dataset.value !== 'other') return `in ${selected.textContent.trim().toLowerCase()}`;
                         const other = followUpOther.value.trim().replace(/\.+$/, '');
                         if (!other) {
                             followUpOther.style.borderColor = '#FF6B6B';
@@ -1287,7 +1288,8 @@
                             setTimeout(() => { followUpOther.style.borderColor = ''; }, 2000);
                             return null;
                         }
-                        return `Follow up: ${other}.`;
+                        // A bare number like "4 months" reads as "in 4 months"
+                        return /^\d/.test(other) ? `in ${other}` : other;
                     };
                     
                     // Handle confirm
@@ -1958,7 +1960,7 @@
                     <button type="button" class="followup-option" data-value="5y">5 Years</button>
                     <button type="button" class="followup-option" data-value="other">Other</button>
                 </div>
-                <input type="text" id="followUpOther" class="followup-other" placeholder="Enter follow-up interval..." autocomplete="off">
+                <input type="text" id="followUpOther" class="followup-other" placeholder="e.g. 4 months, after surgery..." autocomplete="off">
             </div>
             <h3 class="echo-only">If available, enter previous echo details:</h3>
         </div>
