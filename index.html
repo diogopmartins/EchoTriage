@@ -535,6 +535,34 @@
             border-color: #FFC04D;
         }
 
+        .modal-cdc {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            color: #FFD67A;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-cdc.show {
+            display: flex;
+        }
+
+        /* When previous echo is off, the popup only asks about CDC */
+        .modal-content.cdc-only .echo-only,
+        .modal-content:not(.cdc-only) .cdc-only-btn {
+            display: none;
+        }
+
+        .modal-content .modal-cdc input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            padding: 0;
+            accent-color: #FFD67A;
+            cursor: pointer;
+        }
+
         .modal-buttons {
             display: flex;
             gap: 10px;
@@ -1043,7 +1071,7 @@
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
-        function copyToClipboard(textContent, event, skipPreviousEcho = false) {
+        function copyToClipboard(textContent, event, skipPreviousEcho = false, notForCdc = false) {
             const now = new Date();
             let hoursToAdd = 0;
 
@@ -1080,7 +1108,8 @@
             }
 
             const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
-            const textToCopy = `${textContent}${previousEcho} ${timestamp}`;
+            const cdcNote = notForCdc ? ' Not for CDC.' : '';
+            const textToCopy = `${textContent}${cdcNote}${previousEcho} ${timestamp}`;
             
             // Copy to clipboard with error handling
             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1117,9 +1146,11 @@
 
         function createSentenceClickHandler(textContent) {
             return function(event) {
-                // Check if previous echo toggle is enabled
-                if (includePreviousEcho) {
-                    // Show popup to get previous echo text
+                // Not for CDC applies to OP sentences, except REJECTED ones
+                const cdcApplies = currentMode === 'OP' && !textContent.startsWith('REJECTED');
+                // Show the popup when asking for previous echo or Not for CDC
+                if (includePreviousEcho || cdcApplies) {
+                    const cdcOnly = !includePreviousEcho;
                     const modal = document.getElementById('previousEchoModal');
                     const modalSentence = document.getElementById('modalSentence');
                     const input = document.getElementById('previousEchoInput');
@@ -1127,6 +1158,9 @@
                     const cancelBtn = document.getElementById('previousEchoCancel');
                     const skipBtn = document.getElementById('previousEchoSkip');
                     const closeBtn = document.getElementById('previousEchoClose');
+                    const copyBtn = document.getElementById('notForCdcCopy');
+                    const cdcLabel = document.getElementById('notForCdcLabel');
+                    const cdcBox = document.getElementById('notForCdcInput');
                     
                     // Get the clicked sentence element to copy its classes
                     const clickedSentence = event.target;
@@ -1147,8 +1181,12 @@
                     
                     // Reset textarea to empty every time modal opens
                     input.value = '';
+                    // Not for CDC tickbox is OP only and starts unticked every time
+                    cdcBox.checked = false;
+                    cdcLabel.classList.toggle('show', cdcApplies);
+                    modal.querySelector('.modal-content').classList.toggle('cdc-only', cdcOnly);
                     modal.classList.add('show');
-                    input.focus();
+                    (cdcOnly ? copyBtn : input).focus();
                     
                     // Cleanup function to remove all event listeners
                     const cleanup = () => {
@@ -1156,7 +1194,8 @@
                         cancelBtn.removeEventListener('click', handleCancel);
                         skipBtn.removeEventListener('click', handleSkip);
                         closeBtn.removeEventListener('click', handleClose);
-                        input.removeEventListener('keydown', handleKeyDown);
+                        copyBtn.removeEventListener('click', handleCopy);
+                        modal.removeEventListener('keydown', handleKeyDown);
                     };
                     
                     // Handle confirm
@@ -1174,7 +1213,7 @@
                             return;
                         }
                         previousEchoText = echoText; // Store the text
-                        copyToClipboard(textContent, event);
+                        copyToClipboard(textContent, event, false, cdcBox.checked);
                         modal.classList.remove('show');
                         cleanup();
                     };
@@ -1182,14 +1221,21 @@
                     // Handle cancel - set empty and copy
                     const handleCancel = () => {
                         previousEchoText = ''; // Clear previous echo text
-                        copyToClipboard(textContent, event);
+                        copyToClipboard(textContent, event, false, cdcBox.checked);
                         modal.classList.remove('show');
                         cleanup();
                     };
                     
                     // Handle skip - copy without any previous echo information
                     const handleSkip = () => {
-                        copyToClipboard(textContent, event, true); // Skip previous echo
+                        copyToClipboard(textContent, event, true, cdcBox.checked); // Skip previous echo
+                        modal.classList.remove('show');
+                        cleanup();
+                    };
+                    
+                    // Handle copy - previous echo is off, copy with the Not for CDC choice
+                    const handleCopy = () => {
+                        copyToClipboard(textContent, event, true, cdcBox.checked);
                         modal.classList.remove('show');
                         cleanup();
                     };
@@ -1202,9 +1248,9 @@
                     
                     // Handle Enter key
                     const handleKeyDown = (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
+                        if (e.key === 'Enter' && !e.shiftKey && (cdcOnly || e.target === input)) {
                             e.preventDefault();
-                            handleConfirm();
+                            cdcOnly ? handleCopy() : handleConfirm();
                         } else if (e.key === 'Escape') {
                             handleClose(); // Escape closes without copying
                         }
@@ -1214,7 +1260,8 @@
                     cancelBtn.addEventListener('click', handleCancel);
                     skipBtn.addEventListener('click', handleSkip);
                     closeBtn.addEventListener('click', handleClose);
-                    input.addEventListener('keydown', handleKeyDown);
+                    copyBtn.addEventListener('click', handleCopy);
+                    modal.addEventListener('keydown', handleKeyDown);
                 } else {
                     // Normal copy without popup
                     copyToClipboard(textContent, event);
@@ -1791,13 +1838,18 @@
         <button class="modal-close" id="previousEchoClose" aria-label="Close">×</button>
         <div style="margin-top: 45px;">
             <div id="modalSentence" class="modal-sentence"></div>
-            <h3>If available, enter previous echo details:</h3>
+            <h3 class="echo-only">If available, enter previous echo details:</h3>
         </div>
-        <textarea id="previousEchoInput" placeholder="Enter previous echo date and summary..." autocomplete="off" rows="5"></textarea>
+        <textarea id="previousEchoInput" class="echo-only" placeholder="Enter previous echo date and summary..." autocomplete="off" rows="5"></textarea>
+        <label class="modal-cdc" id="notForCdcLabel">
+            <input type="checkbox" id="notForCdcInput">
+            Not for CDC.
+        </label>
         <div class="modal-buttons">
-            <button class="modal-btn" id="previousEchoSkip">Skip this step</button>
-            <button class="modal-btn" id="previousEchoCancel">No previous echo</button>
-            <button class="modal-btn" id="previousEchoConfirm">Add previous echo information</button>
+            <button class="modal-btn echo-only" id="previousEchoSkip">Skip this step</button>
+            <button class="modal-btn echo-only" id="previousEchoCancel">No previous echo</button>
+            <button class="modal-btn echo-only" id="previousEchoConfirm">Add previous echo information</button>
+            <button class="modal-btn cdc-only-btn" id="notForCdcCopy">Copy</button>
         </div>
     </div>
 </div>
