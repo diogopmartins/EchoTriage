@@ -1082,7 +1082,7 @@
                 hoursToAdd = 72;
             }
             // Check for OP pathway names
-            // FOLLOW UP sentences say "triaged as ROUTINE", so like ROUTINE they get no expected date
+            // FOLLOW UP sentences, like ROUTINE, get no expected date
             else if (textContent.includes('FOLLOW UP')) {
                 hoursToAdd = 0;
             } else if (textContent.includes('URGENT')) {
@@ -1108,8 +1108,9 @@
             }
 
             const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
-            const cdcNote = notForCdc ? ' Not for CDC.' : '';
-            const textToCopy = `${textContent}${cdcNote}${previousEcho} ${timestamp}`;
+            // Not for CDC goes after the category, e.g. "FOLLOW UP - NOT FOR CDC - Request ..."
+            const sentence = notForCdc ? textContent.replace(/^(.*?)\s+-\s+/, '$1 - NOT FOR CDC - ') : textContent;
+            const textToCopy = `${sentence}${previousEcho} ${timestamp}`;
             
             // Copy to clipboard with error handling
             if (navigator.clipboard && navigator.clipboard.writeText) {
