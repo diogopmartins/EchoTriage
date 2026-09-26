@@ -120,6 +120,13 @@
             background-color: green !important;
         }
 
+        .sentence.sentence-teal {
+            background-color: #2A2A2A !important;
+        }
+        .sentence.sentence-teal:hover {
+            background-color: #008B8B !important;
+        }
+
         .sentence.sentence-blue {
             background-color: #2A2A2A !important;
         }
@@ -468,6 +475,10 @@
         .modal-sentence.sentence.sentence-green {
             background-color: green !important;
         }
+        #modalSentence.sentence.sentence-teal,
+        .modal-sentence.sentence.sentence-teal {
+            background-color: #008B8B !important;
+        }
         #modalSentence.sentence.sentence-blue,
         .modal-sentence.sentence.sentence-blue {
             background-color: #0066CC !important;
@@ -489,6 +500,10 @@
         #modalSentence.sentence.sentence-green:hover,
         .modal-sentence.sentence.sentence-green:hover {
             background-color: green !important;
+        }
+        #modalSentence.sentence.sentence-teal:hover,
+        .modal-sentence.sentence.sentence-teal:hover {
+            background-color: #008B8B !important;
         }
         #modalSentence.sentence.sentence-blue:hover,
         .modal-sentence.sentence.sentence-blue:hover {
@@ -1039,7 +1054,10 @@
                 hoursToAdd = 72;
             }
             // Check for OP pathway names
-            else if (textContent.includes('URGENT')) {
+            // FOLLOW UP sentences say "triaged as ROUTINE", so like ROUTINE they get no expected date
+            else if (textContent.includes('FOLLOW UP')) {
+                hoursToAdd = 0;
+            } else if (textContent.includes('URGENT')) {
                 hoursToAdd = 24;
             } else if (textContent.includes('SOON')) {
                 hoursToAdd = 72;
@@ -1114,7 +1132,7 @@
                     const clickedSentence = event.target;
                     
                     // Remove any existing sentence classes from modal sentence
-                    modalSentence.classList.remove('sentence', 'sentence-red', 'sentence-purple', 'sentence-amber', 'sentence-green', 'sentence-blue');
+                    modalSentence.classList.remove('sentence', 'sentence-red', 'sentence-purple', 'sentence-amber', 'sentence-green', 'sentence-teal', 'sentence-blue');
                     
                     // Copy sentence classes to modal sentence for proper styling
                     clickedSentence.classList.forEach(cls => {
@@ -1333,9 +1351,12 @@
 
                         // Check pathway based on mode
                         if (mode === 'OP') {
-                            // OP mode: URGENT, SOON, ROUTINE, REJECTED
+                            // OP mode: URGENT, SOON, ROUTINE, FOLLOW UP, REJECTED
+                            // IMPORTANT: Check FOLLOW UP before ROUTINE since FOLLOW UP sentences contain "ROUTINE" text
                             if (textContent.includes('REJECTED')) {
                                 sentence.classList.add('sentence-blue');
+                            } else if (textContent.includes('FOLLOW UP')) {
+                                sentence.classList.add('sentence-teal');
                             } else if (textContent.includes('URGENT')) {
                                 sentence.classList.add('sentence-red');
                             } else if (textContent.includes('SOON')) {
@@ -1389,6 +1410,7 @@
                         let pathwayType = 'green';
                         if (mode === 'OP') {
                             pathwayType = textContent.includes('REJECTED') ? 'rejected' :
+                                         textContent.includes('FOLLOW UP') ? 'followup' :
                                          textContent.includes('URGENT') ? 'red' :
                                          textContent.includes('SOON') ? 'amber' :
                                          textContent.includes('ROUTINE') ? 'green' : 'green';
