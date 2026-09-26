@@ -1,15 +1,7 @@
-- URGENT
+- ACCEPTED
 -- URGENT - Request has been triaged as URGENT.
-
-
-- SOON
 -- SOON  - Request has been triaged as SOON.
-
-
-- ROUTINE
 -- ROUTINE - Request has been triaged as ROUTINE.
-
-- FOLLOW UP
 -- FOLLOW UP - Request has been triaged as follow up.
 
 - REJECTED
