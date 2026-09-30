@@ -81,11 +81,11 @@
             line-height: 1.4;
             color: #FFFFFF;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+            transition: background-color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
         }
 
         .sentence:hover {
-            transform: scale(1.02);
+            transform: translateX(3px);
         }
 
         .sentence:not(.sentence-blue):hover {
@@ -274,7 +274,7 @@
             padding: 0 12px;
             height: 22px;
             text-transform: uppercase;
-            transition: all 0.3s ease;
+            transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -320,7 +320,7 @@
             bottom: 0;
             background-color: #2A2A2A;
             border: 2px solid #FFD67A;
-            transition: 0.3s;
+            transition: var(--t-toggle) var(--ease-out);
             border-radius: 24px;
         }
 
@@ -333,7 +333,7 @@
             top: 50%;
             transform: translateY(-50%);
             background-color: #FFD67A;
-            transition: 0.3s;
+            transition: var(--t-toggle) var(--ease-out);
             border-radius: 50%;
         }
 
@@ -362,7 +362,8 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
             font-size: 1rem;
             opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(4px) scale(0.92);
+            transition: opacity 200ms var(--ease-out), transform 140ms var(--ease-out);
             z-index: 1000;
             max-width: 220px;
             text-align: center;
@@ -372,6 +373,7 @@
 
         .notification.show {
             opacity: 1;
+            transform: translateY(-4px) scale(1);
         }
 
         /* Popup modal for previous echo input */
@@ -419,7 +421,7 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            transition: all 0.3s ease;
+            transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
             line-height: 1;
             z-index: 10;
         }
@@ -562,7 +564,7 @@
             font-size: 0.9rem;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            transition: background-color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
         }
 
         .cdc-option:hover {
@@ -609,7 +611,7 @@
             color: #FFFFFF;
             font-size: 0.8rem;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            transition: background-color var(--t-fast) var(--ease-out), transform var(--t-fast) var(--ease-out);
         }
 
         .followup-option:hover {
@@ -724,7 +726,7 @@
             font-size: 22px;
             line-height: 1;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
         }
 
         .contacts-modal-close:hover {
@@ -778,7 +780,7 @@
             color: #FFFFFF;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
             text-align: center;
             font-weight: normal;
         }
@@ -847,7 +849,7 @@
             bottom: 0;
             background-color: #2A2A2A;
             border: 2px solid #FFD67A;
-            transition: 0.3s;
+            transition: var(--t-toggle) var(--ease-out);
             border-radius: 32px;
         }
 
@@ -859,7 +861,7 @@
             left: 2px;
             bottom: 2px;
             background-color: #FFD67A;
-            transition: 0.3s;
+            transition: var(--t-toggle) var(--ease-out);
             border-radius: 50%;
         }
 
@@ -914,7 +916,7 @@
             padding: 10px 20px;
             margin-top: 10px;
             display: none;
-            transition: all 0.3s ease;
+            transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
             width: 100%;
             text-transform: uppercase;
             font-weight: bold;
@@ -944,6 +946,89 @@
             padding: 2px 4px;
             border-radius: 3px;
             font-weight: bold;
+        }
+        /* ---------- Motion ----------
+           Only transform and opacity, short durations, never blocks a click or copy.
+           Everything is switched off for prefers-reduced-motion. */
+        :root {
+            --ease-out: cubic-bezier(0.2, 0, 0, 1);
+            --t-fast: 120ms;
+            --t-toggle: 160ms;
+            --t-enter: 180ms;
+        }
+
+        @keyframes fade-in { from { opacity: 0; } }
+        @keyframes rise-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+        @keyframes drop-in { from { opacity: 0; transform: translateY(-4px); } }
+        @keyframes nudge {
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-2px); }
+        }
+
+        /* Popups fade in and rise; closing stays instant */
+        .modal-overlay.show,
+        .contacts-modal-overlay.show {
+            animation: fade-in 140ms var(--ease-out);
+        }
+        .modal-overlay.show .modal-content,
+        .contacts-modal-overlay.show .contacts-modal-content {
+            animation: rise-in var(--t-enter) var(--ease-out);
+        }
+
+        /* Follow-up picker arrives just after the popup: sentence, interval, CDC */
+        .modal-overlay.show .modal-followup.show {
+            animation: drop-in var(--t-enter) var(--ease-out) 60ms both;
+        }
+        .modal-content input.followup-other.show {
+            animation: drop-in var(--t-enter) var(--ease-out);
+        }
+
+        /* Buttons press in */
+        .cdc-option:active,
+        .followup-option:active,
+        .modal-btn:active,
+        .pdf-selector-btn:active,
+        .contacts-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Missing choice or too-short text: a short shake pulls the eye */
+        .modal-cdc.missing,
+        .shake {
+            animation: nudge 240ms var(--ease-out);
+        }
+
+        /* Policy zoom fades in on hover, hides instantly */
+        .pdf-zoom-overlay.active {
+            animation: fade-in var(--t-fast) var(--ease-out);
+        }
+
+        /* IP/OP switch: first groups stagger in */
+        .left-column.list-enter .subgroup {
+            animation: drop-in var(--t-enter) var(--ease-out) both;
+        }
+        .left-column.list-enter .subgroup:nth-of-type(2) { animation-delay: 20ms; }
+        .left-column.list-enter .subgroup:nth-of-type(3) { animation-delay: 40ms; }
+        .left-column.list-enter .subgroup:nth-of-type(4) { animation-delay: 60ms; }
+        .left-column.list-enter .subgroup:nth-of-type(5) { animation-delay: 80ms; }
+        .left-column.list-enter .subgroup:nth-of-type(6) { animation-delay: 100ms; }
+        .left-column.list-enter .subgroup:nth-of-type(7) { animation-delay: 120ms; }
+        .left-column.list-enter .subgroup:nth-of-type(n+8) { animation: none; }
+
+        /* Search highlight fades in */
+        .sentence .highlight {
+            animation: fade-in 150ms var(--ease-out);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-delay: 0ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            .sentence:hover { transform: none; }
         }
     </style>
 
@@ -1137,6 +1222,14 @@
             sentence.addEventListener('mouseleave', scheduleHidePdfZoom);
         }
 
+        // Re-adds a class so its CSS animation plays again (e.g. a repeated shake)
+        function replayAnimation(el, cls) {
+            el.classList.remove(cls);
+            void el.offsetWidth;
+            el.classList.add(cls);
+            if (cls === 'shake') el.addEventListener('animationend', () => el.classList.remove('shake'), { once: true });
+        }
+
         function escapeRegex(string) {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
@@ -1324,7 +1417,7 @@
                         if (cdcApplies) {
                             const picked = cdcChoice.querySelector('.cdc-option.selected');
                             if (!picked) {
-                                cdcChoice.classList.add('missing');
+                                replayAnimation(cdcChoice, 'missing');
                                 return null;
                             }
                             notForCdc = picked.dataset.value === 'not-for-cdc';
@@ -1340,6 +1433,7 @@
                         if (echoText.length < 8) {
                             // Show error message - need at least 8 characters
                             input.style.borderColor = '#FF6B6B';
+                            replayAnimation(input, 'shake');
                             input.placeholder = 'Please enter at least 8 characters...';
                             input.value = '';
                             setTimeout(() => {
@@ -1812,8 +1906,11 @@
                     updatePDFSelector();
                 }
                 
-                // Reload sentences
+                // Reload sentences, staggering the first groups in
+                const leftColumn = document.querySelector('.left-column');
                 await loadSentences(currentMode);
+                replayAnimation(leftColumn, 'list-enter');
+                setTimeout(() => leftColumn.classList.remove('list-enter'), 400);
                 
                 // Load appropriate PDF for mode
                 const embedEl = document.querySelector('.pdf-container embed');
