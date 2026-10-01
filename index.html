@@ -875,6 +875,35 @@
             margin-bottom: 15px;
         }
 
+        /* Session triage stats above the search box */
+        .triage-stats {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 12px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #CCCCCC;
+        }
+
+        .triage-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .triage-stat-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .triage-stat-count {
+            color: #FFFFFF;
+            font-weight: bold;
+        }
+
         #searchInput {
             width: 100%;
             padding: 12px 15px;
@@ -1141,6 +1170,62 @@
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
+        // Session triage stats: one count per successful copy, kept in memory only,
+        // so refreshing the page resets them
+        const TRIAGE_CATEGORIES = {
+            IP: [
+                { key: 'purple', label: 'Purple', color: 'purple' },
+                { key: 'red', label: 'Red', color: 'red' },
+                { key: 'amber', label: 'Amber', color: '#FFA500' },
+                { key: 'green', label: 'Green', color: 'green' },
+                { key: 'rejected', label: 'Rejected', color: '#0066CC' }
+            ],
+            OP: [
+                { key: 'urgent', label: 'Urgent', color: 'red' },
+                { key: 'soon', label: 'Soon', color: '#FFA500' },
+                { key: 'routine', label: 'Routine', color: 'green' },
+                { key: 'followup', label: 'Follow up', color: '#008B8B' },
+                { key: 'rejected', label: 'Rejected', color: '#0066CC' }
+            ]
+        };
+
+        const triageStats = { IP: {}, OP: {} };
+
+        // Same category rules as the sentence colours in loadSentences
+        function getTriageCategory(text, mode) {
+            if (mode === 'OP') {
+                if (text.includes('REJECTED')) return 'rejected';
+                if (text.includes('FOLLOW UP')) return 'followup';
+                if (text.includes('URGENT')) return 'urgent';
+                if (text.includes('SOON')) return 'soon';
+                return 'routine';
+            }
+            if (text.includes('PURPLE PATHWAY')) return 'purple';
+            if (text.includes('RED PATHWAY')) return 'red';
+            if (text.includes('AMBER PATHWAY')) return 'amber';
+            if (text.includes('GREEN PATHWAY')) return 'green';
+            if (text.includes('REJECTED')) return 'rejected';
+            return 'green';
+        }
+
+        function recordTriage(text, mode) {
+            const category = getTriageCategory(text, mode);
+            triageStats[mode][category] = (triageStats[mode][category] || 0) + 1;
+            renderTriageStats();
+        }
+
+        function renderTriageStats() {
+            const container = document.getElementById('triageStats');
+            if (!container) return;
+            const counts = triageStats[currentMode];
+            const items = TRIAGE_CATEGORIES[currentMode].map(c => `
+                <span class="triage-stat" title="${c.label} triaged this session">
+                    <span class="triage-stat-dot" style="background-color: ${c.color}"></span>
+                    ${c.label} <span class="triage-stat-count">${counts[c.key] || 0}</span>
+                </span>`).join('');
+            container.innerHTML = items;
+        }
+
         function copyToClipboard(textContent, event, skipPreviousEcho = false, notForCdc = false, followUp = '') {
             const now = new Date();
             let hoursToAdd = 0;
@@ -1183,19 +1268,21 @@
             // Follow-up interval goes right after the category, e.g. "FOLLOW UP in 3 months - NOT FOR CDC - Request ..."
             if (followUp) sentence = sentence.replace(/^FOLLOW UP/, `FOLLOW UP ${followUp}`);
             const textToCopy = `${sentence}${previousEcho} ${timestamp}`;
+            const triageMode = currentMode;
             
             // Copy to clipboard with error handling
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(textToCopy).then(() => {
+                    recordTriage(textContent, triageMode);
                     showNotification(event ? event.clientX : window.innerWidth / 2, event ? event.clientY : 100);
                 }).catch(err => {
                     console.error('Failed to copy:', err);
                     // Fallback method
-                    fallbackCopyToClipboard(textToCopy, event);
+                    if (fallbackCopyToClipboard(textToCopy, event)) recordTriage(textContent, triageMode);
                 });
             } else {
                 // Fallback for browsers that don't support clipboard API
-                fallbackCopyToClipboard(textToCopy, event);
+                if (fallbackCopyToClipboard(textToCopy, event)) recordTriage(textContent, triageMode);
             }
         }
 
@@ -1208,13 +1295,15 @@
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
+            let copied = false;
             try {
-                document.execCommand('copy');
+                copied = document.execCommand('copy');
                 showNotification(event ? event.clientX : window.innerWidth / 2, event ? event.clientY : 100);
             } catch (err) {
                 console.error('Fallback copy failed:', err);
             }
             document.body.removeChild(textArea);
+            return copied;
         }
 
         function createSentenceClickHandler(textContent) {
@@ -1664,11 +1753,13 @@
             const searchContainer = document.createElement('div');
             searchContainer.classList.add('search-container');
             searchContainer.innerHTML = `
+                <div class="triage-stats" id="triageStats"></div>
                 <input type="text" id="searchInput" placeholder="Search sentences..." autocomplete="off">
                 <div class="search-results-info"></div>
                 <button id="clearSearchBtn" title="Clear search">Clear Search</button>
             `;
             leftColumn.insertBefore(searchContainer, leftColumn.firstChild);
+            renderTriageStats();
 
             const searchInput = document.getElementById('searchInput');
             const clearBtn = document.getElementById('clearSearchBtn');
@@ -1813,6 +1904,7 @@
                 }
                 
                 // Reload sentences
+                renderTriageStats();
                 await loadSentences(currentMode);
                 
                 // Load appropriate PDF for mode
