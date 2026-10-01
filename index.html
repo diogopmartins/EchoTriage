@@ -886,11 +886,6 @@
             color: #CCCCCC;
         }
 
-        .triage-stats-title {
-            color: #FFD67A;
-            font-weight: bold;
-        }
-
         .triage-stat {
             display: inline-flex;
             align-items: center;
@@ -907,21 +902,6 @@
         .triage-stat-count {
             color: #FFFFFF;
             font-weight: bold;
-        }
-
-        #triageStatsReset {
-            margin-left: auto;
-            background: none;
-            border: none;
-            padding: 0;
-            color: #888;
-            font-size: 0.8rem;
-            text-decoration: underline;
-            cursor: pointer;
-        }
-
-        #triageStatsReset:hover {
-            color: #FFD67A;
         }
 
         #searchInput {
@@ -1190,9 +1170,8 @@
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
 
-        // Session triage stats: one count per successful copy, kept in sessionStorage
-        // so they survive a refresh but clear when the tab is closed
-        const TRIAGE_STATS_KEY = 'echoTriageSessionStats';
+        // Session triage stats: one count per successful copy, kept in memory only,
+        // so refreshing the page resets them
         const TRIAGE_CATEGORIES = {
             IP: [
                 { key: 'purple', label: 'Purple', color: 'purple' },
@@ -1210,25 +1189,7 @@
             ]
         };
 
-        function loadTriageStats() {
-            try {
-                const saved = JSON.parse(sessionStorage.getItem(TRIAGE_STATS_KEY));
-                if (saved && saved.IP && saved.OP) return saved;
-            } catch (err) {
-                // Storage unavailable or corrupt: start from zero
-            }
-            return { IP: {}, OP: {} };
-        }
-
-        let triageStats = loadTriageStats();
-
-        function saveTriageStats() {
-            try {
-                sessionStorage.setItem(TRIAGE_STATS_KEY, JSON.stringify(triageStats));
-            } catch (err) {
-                // Counts still work for this page view without storage
-            }
-        }
+        const triageStats = { IP: {}, OP: {} };
 
         // Same category rules as the sentence colours in loadSentences
         function getTriageCategory(text, mode) {
@@ -1250,7 +1211,6 @@
         function recordTriage(text, mode) {
             const category = getTriageCategory(text, mode);
             triageStats[mode][category] = (triageStats[mode][category] || 0) + 1;
-            saveTriageStats();
             renderTriageStats();
         }
 
@@ -1263,16 +1223,7 @@
                     <span class="triage-stat-dot" style="background-color: ${c.color}"></span>
                     ${c.label} <span class="triage-stat-count">${counts[c.key] || 0}</span>
                 </span>`).join('');
-            container.innerHTML = `
-                <span class="triage-stats-title">${currentMode} this session:</span>
-                ${items}
-                <button id="triageStatsReset" title="Reset ${currentMode} counts to zero">reset</button>
-            `;
-            document.getElementById('triageStatsReset').addEventListener('click', () => {
-                triageStats[currentMode] = {};
-                saveTriageStats();
-                renderTriageStats();
-            });
+            container.innerHTML = items;
         }
 
         function copyToClipboard(textContent, event, skipPreviousEcho = false, notForCdc = false, followUp = '') {
