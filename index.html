@@ -1264,7 +1264,13 @@
 
             const timestamp = `** Triaged on ${formatDate(now)} @ ${formatTime(now)} **${expected}`;
             // Not for CDC goes after the category, e.g. "FOLLOW UP - NOT FOR CDC - Request ..."
-            let sentence = notForCdc ? textContent.replace(/^(.*?)\s+-\s+/, '$1 - NOT FOR CDC - ') : textContent;
+            // Sentences without a " - " category (e.g. BUBBLE ECHO) get "NOT FOR CDC - " at the start
+            let sentence = textContent;
+            if (notForCdc) {
+                sentence = /\s+-\s+/.test(textContent)
+                    ? textContent.replace(/^(.*?)\s+-\s+/, '$1 - NOT FOR CDC - ')
+                    : `NOT FOR CDC - ${textContent}`;
+            }
             // Follow-up interval goes right after the category, e.g. "FOLLOW UP in 3 months - NOT FOR CDC - Request ..."
             if (followUp) sentence = sentence.replace(/^FOLLOW UP/, `FOLLOW UP ${followUp}`);
             const textToCopy = `${sentence}${previousEcho} ${timestamp}`;
