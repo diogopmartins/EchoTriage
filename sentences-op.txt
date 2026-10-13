@@ -2,6 +2,7 @@
 -- URGENT - Request has been triaged as URGENT.
 -- SOON  - Request has been triaged as SOON.
 -- ROUTINE - Request has been triaged as ROUTINE.
+-- ROUTINE - Bubble echo accepted. Please book only after the TTE results are ready. Do not book TTE and bubble on the same day. Thank you
 -- FOLLOW UP - Request has been triaged as follow up.
 
 - REJECTED
