@@ -1331,8 +1331,8 @@
 
         function createSentenceClickHandler(textContent) {
             return function(event) {
-                // Not for CDC applies to OP sentences, except REJECTED ones
-                const cdcApplies = currentMode === 'OP' && !textContent.startsWith('REJECTED');
+                // Not for CDC applies to OP sentences, except REJECTED and BUBBLE ECHO (always hospital)
+                const cdcApplies = currentMode === 'OP' && !textContent.startsWith('REJECTED') && !textContent.includes('BUBBLE ECHO');
                 // Show the popup when asking for previous echo or Not for CDC
                 if (includePreviousEcho || cdcApplies) {
                     const cdcOnly = !includePreviousEcho;
