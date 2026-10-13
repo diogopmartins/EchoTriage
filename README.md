@@ -8,7 +8,7 @@ A simple web application for quickly generating and copying standardized echo tr
 
 ### Dual Mode Support
 - **IP Triage Mode**: For inpatient echo requests with color-coded pathways (Purple, Red, Amber, Green)
-- **OP Triage Mode**: For outpatient echo requests with priority levels (Urgent, Soon, Routine, Follow Up, Rejected)
+- **OP Triage Mode**: For outpatient echo requests with priority levels (Urgent, Soon, Routine, Follow Up, Bubble Echo, Rejected)
 
 ### Interactive Features
 - **One-click Copy**: Click any sentence to copy it to your clipboard
@@ -30,6 +30,7 @@ A simple web application for quickly generating and copying standardized echo tr
 - 🟡 **Soon**: Amber color
 - 🟢 **Routine**: Green color
 - 🩵 **Follow Up**: Teal color (triaged as routine, so no expected date is added)
+- 🩷 **Bubble Echo**: Pink color (no expected date, same booking behaviour as routine)
 - 🔵 **Rejected**: Blue color
 
 ## File Structure
