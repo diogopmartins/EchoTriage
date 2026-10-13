@@ -127,6 +127,13 @@
             background-color: #008B8B !important;
         }
 
+        .sentence.sentence-pink {
+            background-color: #2A2A2A !important;
+        }
+        .sentence.sentence-pink:hover {
+            background-color: #FF69B4 !important;
+        }
+
         .sentence.sentence-blue {
             background-color: #2A2A2A !important;
         }
@@ -479,6 +486,10 @@
         .modal-sentence.sentence.sentence-teal {
             background-color: #008B8B !important;
         }
+        #modalSentence.sentence.sentence-pink,
+        .modal-sentence.sentence.sentence-pink {
+            background-color: #FF69B4 !important;
+        }
         #modalSentence.sentence.sentence-blue,
         .modal-sentence.sentence.sentence-blue {
             background-color: #0066CC !important;
@@ -504,6 +515,10 @@
         #modalSentence.sentence.sentence-teal:hover,
         .modal-sentence.sentence.sentence-teal:hover {
             background-color: #008B8B !important;
+        }
+        #modalSentence.sentence.sentence-pink:hover,
+        .modal-sentence.sentence.sentence-pink:hover {
+            background-color: #FF69B4 !important;
         }
         #modalSentence.sentence.sentence-blue:hover,
         .modal-sentence.sentence.sentence-blue:hover {
@@ -1185,6 +1200,7 @@
                 { key: 'soon', label: 'Soon', color: '#FFA500' },
                 { key: 'routine', label: 'Routine', color: 'green' },
                 { key: 'followup', label: 'Follow up', color: '#008B8B' },
+                { key: 'bubble', label: 'Bubble echo', color: '#FF69B4' },
                 { key: 'rejected', label: 'Rejected', color: '#0066CC' }
             ]
         };
@@ -1196,6 +1212,7 @@
             if (mode === 'OP') {
                 if (text.includes('REJECTED')) return 'rejected';
                 if (text.includes('FOLLOW UP')) return 'followup';
+                if (text.includes('BUBBLE ECHO')) return 'bubble';
                 if (text.includes('URGENT')) return 'urgent';
                 if (text.includes('SOON')) return 'soon';
                 return 'routine';
@@ -1338,7 +1355,7 @@
                     const clickedSentence = event.target;
                     
                     // Remove any existing sentence classes from modal sentence
-                    modalSentence.classList.remove('sentence', 'sentence-red', 'sentence-purple', 'sentence-amber', 'sentence-green', 'sentence-teal', 'sentence-blue');
+                    modalSentence.classList.remove('sentence', 'sentence-red', 'sentence-purple', 'sentence-amber', 'sentence-green', 'sentence-teal', 'sentence-pink', 'sentence-blue');
                     
                     // Copy sentence classes to modal sentence for proper styling
                     clickedSentence.classList.forEach(cls => {
@@ -1645,12 +1662,14 @@
 
                         // Check pathway based on mode
                         if (mode === 'OP') {
-                            // OP mode: URGENT, SOON, ROUTINE, FOLLOW UP, REJECTED
+                            // OP mode: URGENT, SOON, ROUTINE, FOLLOW UP, BUBBLE ECHO, REJECTED
                             // IMPORTANT: Check FOLLOW UP before ROUTINE since FOLLOW UP sentences contain "ROUTINE" text
                             if (textContent.includes('REJECTED')) {
                                 sentence.classList.add('sentence-blue');
                             } else if (textContent.includes('FOLLOW UP')) {
                                 sentence.classList.add('sentence-teal');
+                            } else if (textContent.includes('BUBBLE ECHO')) {
+                                sentence.classList.add('sentence-pink');
                             } else if (textContent.includes('URGENT')) {
                                 sentence.classList.add('sentence-red');
                             } else if (textContent.includes('SOON')) {
@@ -1705,6 +1724,7 @@
                         if (mode === 'OP') {
                             pathwayType = textContent.includes('REJECTED') ? 'rejected' :
                                          textContent.includes('FOLLOW UP') ? 'followup' :
+                                         textContent.includes('BUBBLE ECHO') ? 'pink' :
                                          textContent.includes('URGENT') ? 'red' :
                                          textContent.includes('SOON') ? 'amber' :
                                          textContent.includes('ROUTINE') ? 'green' : 'green';
