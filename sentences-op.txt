@@ -4,7 +4,7 @@
 -- ROUTINE - Request has been triaged as ROUTINE.
 -- FOLLOW UP - Request has been triaged as follow up.
 -- BUBBLE ECHO accepted. Please book only after the TTE results are ready. Do not book TTE and bubble on the same day. Thank you
--- PEADS ECHO.
+-- Paediatric echo.
 
 
 - REJECTED

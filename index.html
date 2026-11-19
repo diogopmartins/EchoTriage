@@ -1210,7 +1210,7 @@
                 { key: 'routine', label: 'Routine', color: 'green' },
                 { key: 'followup', label: 'Follow up', color: '#008B8B' },
                 { key: 'bubble', label: 'Bubble echo', color: '#FF69B4' },
-                { key: 'paediatric', label: 'Paeds echo', color: '#8B4513' },
+                { key: 'paediatric', label: 'Paediatric echo', color: '#8B4513' },
                 { key: 'rejected', label: 'Rejected', color: '#0066CC' }
             ]
         };
@@ -1221,7 +1221,7 @@
         function getTriageCategory(text, mode) {
             if (mode === 'OP') {
                 if (text.includes('REJECTED') || text.startsWith('This request has been rejected')) return 'rejected';
-                if (text.startsWith('PEADS ECHO')) return 'paediatric';
+                if (text.startsWith('Paediatric echo')) return 'paediatric';
                 if (text.includes('FOLLOW UP')) return 'followup';
                 if (text.includes('BUBBLE ECHO')) return 'bubble';
                 if (text.includes('URGENT')) return 'urgent';
