@@ -134,6 +134,10 @@
             background-color: #FF69B4 !important;
         }
 
+        .sentence.sentence-paediatric:hover {
+            background-color: #8B4513 !important;
+        }
+
         .sentence.sentence-blue {
             background-color: #2A2A2A !important;
         }
@@ -489,6 +493,10 @@
         #modalSentence.sentence.sentence-pink,
         .modal-sentence.sentence.sentence-pink {
             background-color: #FF69B4 !important;
+        }
+        #modalSentence.sentence.sentence-paediatric,
+        #modalSentence.sentence.sentence-paediatric:hover {
+            background-color: #8B4513 !important;
         }
         #modalSentence.sentence.sentence-blue,
         .modal-sentence.sentence.sentence-blue {
@@ -1064,6 +1072,7 @@
 
         function getOpPosterRegion(text) {
             const t = text.toLowerCase();
+            if (t.includes('unable to accept gp requests for echocardiography for paediatric patients')) return null;
             if (t.includes('unchanged murmur')) return OP_POSTER_REGIONS.murmur;
             if (t.includes('vasovagal') || t.includes('palpitations without') || t.includes('ectopy')) return OP_POSTER_REGIONS.palp;
             if (t.includes('anticoagulation')) return OP_POSTER_REGIONS.mass;
@@ -1201,6 +1210,7 @@
                 { key: 'routine', label: 'Routine', color: 'green' },
                 { key: 'followup', label: 'Follow up', color: '#008B8B' },
                 { key: 'bubble', label: 'Bubble echo', color: '#FF69B4' },
+                { key: 'paediatric', label: 'Paeds echo', color: '#8B4513' },
                 { key: 'rejected', label: 'Rejected', color: '#0066CC' }
             ]
         };
@@ -1210,7 +1220,8 @@
         // Same category rules as the sentence colours in loadSentences
         function getTriageCategory(text, mode) {
             if (mode === 'OP') {
-                if (text.includes('REJECTED')) return 'rejected';
+                if (text.includes('REJECTED') || text.startsWith('This request has been rejected')) return 'rejected';
+                if (text.startsWith('PEADS ECHO')) return 'paediatric';
                 if (text.includes('FOLLOW UP')) return 'followup';
                 if (text.includes('BUBBLE ECHO')) return 'bubble';
                 if (text.includes('URGENT')) return 'urgent';
@@ -1331,8 +1342,8 @@
 
         function createSentenceClickHandler(textContent) {
             return function(event) {
-                // Not for CDC applies to OP sentences, except REJECTED and BUBBLE ECHO (always hospital)
-                const cdcApplies = currentMode === 'OP' && !textContent.startsWith('REJECTED') && !textContent.includes('BUBBLE ECHO');
+                const category = getTriageCategory(textContent, currentMode);
+                const cdcApplies = currentMode === 'OP' && !['rejected', 'bubble', 'paediatric'].includes(category);
                 // Show the popup when asking for previous echo or Not for CDC
                 if (includePreviousEcho || cdcApplies) {
                     const cdcOnly = !includePreviousEcho;
@@ -1355,7 +1366,7 @@
                     const clickedSentence = event.target;
                     
                     // Remove any existing sentence classes from modal sentence
-                    modalSentence.classList.remove('sentence', 'sentence-red', 'sentence-purple', 'sentence-amber', 'sentence-green', 'sentence-teal', 'sentence-pink', 'sentence-blue');
+                    modalSentence.classList.remove('sentence', 'sentence-red', 'sentence-purple', 'sentence-amber', 'sentence-green', 'sentence-teal', 'sentence-pink', 'sentence-paediatric', 'sentence-blue');
                     
                     // Copy sentence classes to modal sentence for proper styling
                     clickedSentence.classList.forEach(cls => {
@@ -1660,25 +1671,18 @@
                         sentence.textContent = textContent;
                         sentence.setAttribute('data-original-text', textContent);
 
-                        // Check pathway based on mode
+                        const category = getTriageCategory(textContent, mode);
                         if (mode === 'OP') {
-                            // OP mode: URGENT, SOON, ROUTINE, FOLLOW UP, BUBBLE ECHO, REJECTED
-                            // IMPORTANT: Check FOLLOW UP before ROUTINE since FOLLOW UP sentences contain "ROUTINE" text
-                            if (textContent.includes('REJECTED')) {
-                                sentence.classList.add('sentence-blue');
-                            } else if (textContent.includes('FOLLOW UP')) {
-                                sentence.classList.add('sentence-teal');
-                            } else if (textContent.includes('BUBBLE ECHO')) {
-                                sentence.classList.add('sentence-pink');
-                            } else if (textContent.includes('URGENT')) {
-                                sentence.classList.add('sentence-red');
-                            } else if (textContent.includes('SOON')) {
-                                sentence.classList.add('sentence-amber');
-                            } else if (textContent.includes('ROUTINE')) {
-                                sentence.classList.add('sentence-green');
-                            } else {
-                                sentence.classList.add('sentence-green');
-                            }
+                            const categoryColours = {
+                                rejected: 'blue',
+                                followup: 'teal',
+                                bubble: 'pink',
+                                paediatric: 'paediatric',
+                                urgent: 'red',
+                                soon: 'amber',
+                                routine: 'green'
+                            };
+                            sentence.classList.add(`sentence-${categoryColours[category]}`);
                         } else {
                             // IP mode: PURPLE PATHWAY, RED PATHWAY, AMBER PATHWAY, GREEN PATHWAY, REJECTED
                             // IMPORTANT: Check GREEN PATHWAY before REJECTED since some GREEN sentences contain "rejected" text
@@ -1698,9 +1702,12 @@
                         }
 
                         sentence.onclick = createSentenceClickHandler(textContent);
-                        if (mode === 'OP' && textContent.includes('REJECTED')) {
-                            sentence.title = 'Hover to preview the matching BSE OP section';
-                            attachPdfZoom(sentence, () => getOpPosterRegion(textContent));
+                        if (mode === 'OP' && category === 'rejected') {
+                            const region = getOpPosterRegion(textContent);
+                            if (region) {
+                                sentence.title = 'Hover to preview the matching BSE OP section';
+                                attachPdfZoom(sentence, () => region);
+                            }
                         } else if (mode === 'IP') {
                             if (getIpPolicyRegion(textContent)) {
                                 sentence.title = 'Hover to preview the matching Dept Policy section';
@@ -1722,9 +1729,10 @@
                         // Set pathway for search/filter
                         let pathwayType = 'green';
                         if (mode === 'OP') {
-                            pathwayType = textContent.includes('REJECTED') ? 'rejected' :
+                            pathwayType = category === 'rejected' ? 'rejected' :
                                          textContent.includes('FOLLOW UP') ? 'followup' :
                                          textContent.includes('BUBBLE ECHO') ? 'pink' :
+                                         category === 'paediatric' ? 'paediatric' :
                                          textContent.includes('URGENT') ? 'red' :
                                          textContent.includes('SOON') ? 'amber' :
                                          textContent.includes('ROUTINE') ? 'green' : 'green';

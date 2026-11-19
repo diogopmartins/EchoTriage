@@ -8,6 +8,7 @@
 
 
 - REJECTED
+-- This request has been rejected as we are unable to accept GP requests for echocardiography for paediatric patients. Please get in touch with the Paediatric team at NGH if clinically indicated.
 -- REJECTED - Request has been rejected as it does not provide sufficient clinical information for triage. Please submit a new request with the appropriate clinical details, in accordance with BSE outpatient echo guidance. For more information, call 4473. Please note that a new request must be submitted.
 -- REJECTED - Request has been rejected as it does not provide the clinical information required for heart failure triage, such as NT-proBNP, ECG, NYHA class, cardiovascular examination (?JVP, ?murmurs), chest X-ray, and whether there was a previous echo. Please submit a new request with the appropriate clinical details. For more information, call 4473. Please note that a new request must be submitted.
 -- REJECTED - Request has been rejected as the patient has had a recent echo which answers the clinical question on the request. Repeat outpatient echo is not indicated unless there has been a change in clinical status.
